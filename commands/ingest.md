@@ -19,17 +19,20 @@ Process the `raw/` folder: messy notes, call transcripts, voice memo text, paste
 | `wiki/` | Durable reference: people, tools, concepts, glossary. |
 | `drafts/` | Content in progress: posts, emails, scripts. |
 | `daily-logs/` | Only if the item is a record of a specific day's work. |
+| `raw/voc/`, `raw/strategy/`, `raw/performance/`, `raw/brand/` | Only if the Marketing Brain is set up here (`raw/voc/` exists). Its inputs: customer exports, surveys and research, call notes and transcripts, strategy docs, performance pulls, copy samples, brand guides. Use the subfolder in the "Where each document goes" table in `frameworks/live-data-and-research.md`. The exercises read only those folders, so a survey filed under `projects/` is never read. |
 
 ## Steps
 
-1. **Read everything in `raw/`** (skip `raw/README.md`, and skip `raw/voc/` and `raw/brand/` entirely if they exist: those are Marketing Brain inputs that stay where they are). List each item with a one-line summary of what it is.
-2. **Make sense of each item.** What is it about? Is it a task, an idea, a decision, reference material, draft content, or project input? Search the repo for an existing home before deciding.
+1. **Read everything in the top level of `raw/`** (skip `raw/README.md`, and skip the files already inside `raw/voc/`, `raw/brand/`, `raw/strategy/`, and `raw/performance/` if they exist: those are Marketing Brain inputs that stay where they are). List each item with a one-line summary of what it is.
+2. **Make sense of each item.** What is it about? Is it a task, an idea, a decision, reference material, draft content, project input, or (when the Marketing Brain is set up) a Marketing Brain input: customer words, research, strategy, performance data, or brand copy? Search the repo for an existing home before deciding.
 3. **Choose an action for each:**
    - **Merge** into an existing note (add a task to a project's open tasks, a step to a framework). Prefer this when a clear home exists.
    - **Create** a new note in the right folder when it is a new topic.
+   - **Move** a Marketing Brain input into its `raw/` subfolder. Keep it verbatim: no restructuring, no cleanup of customer wording. Add a first line with its source and date (for a CSV, put that in the plan instead, so the header row stays first). If a call transcript also holds tasks or decisions, do both: the transcript moves, the tasks go to the project file.
+   - **Check before `raw/brand/`.** It is committed to git. Anything internal, under NDA, about customers, or of unclear status goes to a gitignored folder (`raw/strategy/` or `raw/voc/`) instead, and say so in the plan. On-brand or off-brand is the user's call: ask if they have not said.
    - **Hold** in `raw/` when it is too ambiguous to route confidently.
 4. **Propose the plan as a table and wait for confirmation:**
-   `Raw item | action (merge / create / hold) | destination | why`
+   `Raw item | action (merge / create / move / hold) | destination | why`
 5. **After confirmation, file it:**
    - Match the frontmatter and structure of existing files in the destination folder.
    - Clear title, clean headings, loose thoughts turned into sections.
