@@ -8,6 +8,7 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/lib-valid-log.sh"
+. "$SCRIPT_DIR/lib-folders.sh"
 
 input="$(cat)"
 transcript="$(json_field "$input" transcript_path)"
@@ -17,5 +18,5 @@ transcript="$(json_field "$input" transcript_path)"
 
 today="$(date +%F)"
 detach bash "$SCRIPT_DIR/auto-shutdown-run.sh" "$transcript" \
-  "$CLAUDE_PROJECT_DIR/daily-logs/$today-convo.md" "$SCRIPT_DIR/auto-shutdown-prompt.md" "$today"
+  "$(pos_dir "$CLAUDE_PROJECT_DIR" daily-logs)/$today-convo.md" "$SCRIPT_DIR/auto-shutdown-prompt.md" "$today"
 exit 0

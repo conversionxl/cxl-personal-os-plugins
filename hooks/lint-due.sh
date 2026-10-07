@@ -23,7 +23,8 @@ fi
 
 VAULT="$CLAUDE_PROJECT_DIR"
 [ -n "$VAULT" ] || exit 0
-logdir="$VAULT/daily-logs"
+. "$(dirname "${BASH_SOURCE[0]}")/lib-folders.sh"
+logdir="$(pos_dir "$VAULT" daily-logs)"
 [ -d "$logdir" ] || exit 0
 
 LINT_CADENCE_DAYS=7

@@ -9,7 +9,8 @@
 input="$(cat)"
 [ "$(json_field "$input" source)" = "compact" ] && exit 0
 
-DIR="$CLAUDE_PROJECT_DIR/daily-logs"
+. "$(dirname "${BASH_SOURCE[0]}")/lib-folders.sh"
+DIR="$(pos_dir "$CLAUDE_PROJECT_DIR" daily-logs)"
 [ -d "$DIR" ] || exit 0
 # Dated logs only. lint-exceptions.md and the *-lint.md reports would otherwise
 # sort into the "two most recent" slots and push a real log out.

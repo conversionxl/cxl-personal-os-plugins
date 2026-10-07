@@ -5,7 +5,7 @@ argument-hint: [tour]
 
 # /personal-os:start
 
-Welcome the user to their personal OS and get it working. This is their first session in the repo, or they want the tour again. If `$ARGUMENTS` is `tour`, skip setup (steps 1 and 2) and step 5, and give only the explanation in steps 3 and 4.
+Welcome the user to their personal OS and get it working. This is their first session in the repo, or they want the tour again. If `$ARGUMENTS` is `tour`, skip setup (steps 1, 2 and 2b) and step 5, and give only the explanation in steps 3 and 4.
 
 Work through the steps in order. Keep each message short and skimmable; this is an onboarding, not a lecture. Pause where the step says to wait.
 
@@ -46,6 +46,26 @@ Install hints for anything missing: macOS `brew install jq gh`; Windows `winget 
 - At the start of a session, Claude reads the newest logs itself (CLAUDE.md tells it to).
 - The weekly team update will not write itself either. Run `/personal-os:team-update last-week` on Mondays.
 Nothing else in the repo depends on hooks.
+
+## 2b. Your own folders
+
+Skip this step if the user already answered it in this session, if `.claude/folders.json` exists (unless they asked to change it), or if the folder holds nothing beyond the personal OS itself.
+
+Many people arrive with a system of their own: folders for projects, reference notes, an about-me file. They keep it. The personal OS reroutes to their folders instead of asking them to restructure.
+
+1. **Look.** List the top-level folders and one level down. Anything that is not a standard personal OS folder is theirs.
+2. **Match by purpose** and show one table: slot | standard folder | their folder | why. The slots: `projects` (one folder per piece of work), `raw` (inbox, dumps, unsorted), `wiki` (reference, resources, people, glossary), `drafts` (work in progress), `frameworks` (methods, playbooks, checklists, SOPs), `team-updates`. Module slots, only where the module is installed: `brand-wiki` (`wiki/brand/`), `voc` (`raw/voc/`), `brand-inputs` (`raw/brand/`), `strategy` (`raw/strategy/`), `performance` (`raw/performance/`), `campaign-inputs` (`raw/campaigns/`), `campaigns` (`projects/campaigns/`). A module slot that is not mapped follows its parent: with `raw` mapped to `Inbox`, `voc` is `Inbox/voc/`. Recommend keeping `daily-logs` as it is. A folder that fits no slot stays where it is; say so.
+3. **Ask** in one line: reroute to your folders, or use the standard layout? Wait for the answer. Standard layout: skip the rest of this step.
+4. **Write the map** to `.claude/folders.json` with the shell (a heredoc), only the slots that differ, keeping any keys already there. Values are paths relative to this folder:
+   ```
+   mkdir -p .claude && cat > .claude/folders.json <<'JSON'
+   { "projects": "PROJECTS", "wiki": "RESOURCES" }
+   JSON
+   ```
+5. **Wire it up** and show the output: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/folder-map.sh" gitignore` (local-only folders such as `raw/voc/` stay out of git under their new names), `bash "${CLAUDE_PLUGIN_ROOT}/hooks/folder-map.sh" claude-md` (adds the folder-map rule to an older `CLAUDE.md`), then `bash "${CLAUDE_PLUGIN_ROOT}/hooks/folder-map.sh" show`.
+6. **Tidy the leftovers, on confirmation only.** A standard folder the map replaced that holds only what setup put there (its `README.md`, `projects/_template.md`) can go: propose moving `_template.md` into their projects folder and removing the rest. An about-me or instructions file in a subfolder (for example `ABOUT ME/CLAUDE.md`) does not load at session start: offer to merge it into the About me section of the root `CLAUDE.md`. `CLAUDE.md`, `AGENTS.md` and `.claude/` never move.
+
+From here on, use the mapped folder names in every step and explanation.
 
 ## 3. Explain how it works
 
