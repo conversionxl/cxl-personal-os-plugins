@@ -63,7 +63,7 @@ Many people arrive with a system of their own: folders for projects, reference n
    JSON
    ```
 5. **Wire it up** and show the output: `bash "${CLAUDE_PLUGIN_ROOT}/hooks/folder-map.sh" gitignore` (local-only folders such as `raw/voc/` stay out of git under their new names), `bash "${CLAUDE_PLUGIN_ROOT}/hooks/folder-map.sh" claude-md` (adds the folder-map rule to an older `CLAUDE.md`), then `bash "${CLAUDE_PLUGIN_ROOT}/hooks/folder-map.sh" show`.
-6. **Tidy the leftovers, on confirmation only.** A standard folder the map replaced that holds only what setup put there (its `README.md`, `projects/_template.md`) can go: propose moving `_template.md` into their projects folder and removing the rest. An about-me or instructions file in a subfolder (for example `ABOUT ME/CLAUDE.md`) does not load at session start: offer to merge it into the About me section of the root `CLAUDE.md`. `CLAUDE.md`, `AGENTS.md` and `.claude/` never move.
+6. **Tidy the leftovers, on confirmation only.** A standard folder the map replaced that holds only what setup put there (its `README.md`, `projects/_template.md`) can go: propose moving `_template.md` into their projects folder and removing the rest. An about-me file in a subfolder (for example `ABOUT ME/CLAUDE.md`) loads only when Claude works in that folder, but it applies everywhere: offer to merge it into the About me section of the root `CLAUDE.md`. A subfolder `CLAUDE.md` with rules for that folder only stays where it is. `CLAUDE.md`, `AGENTS.md` and `.claude/` never move.
 
 From here on, use the mapped folder names in every step and explanation.
 
