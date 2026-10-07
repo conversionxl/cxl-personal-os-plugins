@@ -11,7 +11,8 @@
 txdir="$1"
 VAULT="$2"
 prompt="$(dirname "$0")/auto-shutdown-prompt.md"
-logdir="$VAULT/daily-logs"
+. "$(dirname "$0")/lib-folders.sh"
+logdir="$(pos_dir "$VAULT" daily-logs)"
 
 [ -d "$txdir" ] || exit 0
 [ -f "$prompt" ] || exit 0

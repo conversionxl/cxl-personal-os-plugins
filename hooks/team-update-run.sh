@@ -6,7 +6,10 @@ set -u
 VAULT="$1"
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$HERE/lib-valid-log.sh"
+. "$HERE/lib-folders.sh"
 cd "$VAULT" || exit 0
+logs="$(pos_rel . daily-logs)"
+updates="$(pos_rel . team-updates)"
 
 CLAUDE_BIN="$(claude_bin)"; [ -n "$CLAUDE_BIN" ] || exit 0
 
@@ -24,13 +27,13 @@ today="$(date +%F)"
 this_monday="$(date_add "$today" "-$(( $(dow "$today") - 1 ))")"
 monday="$(date_add "$this_monday" -7)"
 [ -n "$monday" ] || exit 0
-out="team-updates/week-of-$monday.md"
+out="$updates/week-of-$monday.md"
 [ -e "$out" ] && exit 0
 
 src="$(mktemp)"; tmp="$(mktemp)"
 trap 'rm -f "$src" "$tmp"' EXIT
 for i in 0 1 2 3 4 5 6; do
-  cat daily-logs/"$(date_add "$monday" "$i")"*.md 2>/dev/null
+  cat "$logs"/"$(date_add "$monday" "$i")"*.md 2>/dev/null
 done > "$src"
 [ -s "$src" ] || exit 0
 
@@ -45,6 +48,6 @@ grep -q '^NO_UPDATE' "$tmp" && exit 0
 grep -q '^## ' "$tmp" || exit 0
 strip_em_dashes "$tmp"
 redact_emails "$tmp"
-mkdir -p team-updates
+mkdir -p "$updates"
 [ -e "$out" ] || mv "$tmp" "$out"
 exit 0

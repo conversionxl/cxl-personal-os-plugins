@@ -61,8 +61,12 @@ New versions don't install themselves on a personal marketplace. To update: **Pl
 | `/personal-os:brief` | Everything the folder knows about a person, project or topic |
 | `/personal-os:ingest` | Files what you dropped into `raw/` |
 | `/personal-os:shutdown` | End of day: reconciles, routes commitments, writes the daily log |
-| `/personal-os:lint` | Weekly health check |
+| `/personal-os:lint` | Weekly health check, including loose and temp files and a folder cleanup plan |
 | `/personal-os:team-update` | A standup-style update from your daily logs |
+
+## Already have your own folders?
+
+Keep them. Run `/personal-os:setup` in the folder you already use. If it holds folders of your own, setup asks whether to reroute the personal OS to them (say `PROJECTS/` for projects and `Resources/` for the wiki) before it copies anything, and saves your answer in `.claude/folders.json`. Every hook, command, skill and agent then uses your folder names, the workshop plugins (`/marketing-brain:setup`, `/campaign-engine:setup`) put their folders inside yours, and local-only folders stay out of git under their new names. Nothing moves unless you say so. `CLAUDE.md`, `AGENTS.md` and `.claude/` stay where they are. `/personal-os:lint` checks the map each week.
 
 ## How the hooks stay out of your other folders
 

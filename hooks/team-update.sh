@@ -5,7 +5,8 @@
 [ -n "$CC_AUTO_SHUTDOWN" ] && exit 0
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 . "$SCRIPT_DIR/lib-valid-log.sh"
+. "$SCRIPT_DIR/lib-folders.sh"
 cat >/dev/null
-[ -n "$CLAUDE_PROJECT_DIR" ] && [ -d "$CLAUDE_PROJECT_DIR/daily-logs" ] || exit 0
+[ -n "$CLAUDE_PROJECT_DIR" ] && [ -d "$(pos_dir "$CLAUDE_PROJECT_DIR" daily-logs)" ] || exit 0
 detach bash "$SCRIPT_DIR/team-update-run.sh" "$CLAUDE_PROJECT_DIR"
 exit 0

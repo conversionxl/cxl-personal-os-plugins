@@ -7,9 +7,13 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-$PWD}"
 cd "$TARGET"
 
+# A folder map (.claude/folders.json, written by the "Your own folders" step
+# before this script runs) sends each template file to the user's own folder.
+. "$ROOT/hooks/lib-folders.sh"
+
 created=0; kept=0
 while IFS= read -r -d '' src; do
-  rel="${src#"$ROOT/template/"}"
+  rel="$(pos_map_path "$PWD" "${src#"$ROOT/template/"}")"
   if [ -e "$rel" ]; then kept=$((kept+1)); continue; fi
   mkdir -p "$(dirname "$rel")"
   cp "$src" "$rel"
@@ -21,6 +25,11 @@ version="$(sed -n 's/.*"version": *"\([^"]*\)".*/\1/p' "$ROOT/.claude-plugin/plu
 if [ ! -f .claude/personal-os.json ]; then
   printf '{\n  "plugin": "personal-os",\n  "version": "%s",\n  "created": "%s"\n}\n' "$version" "$(date +%Y-%m-%d)" > .claude/personal-os.json
   created=$((created+1))
+fi
+
+if [ -f .claude/folders.json ]; then
+  map_gi="$(bash "$ROOT/hooks/folder-map.sh" gitignore "$PWD")"
+  map_cm="$(bash "$ROOT/hooks/folder-map.sh" claude-md "$PWD")"
 fi
 
 git_state="git not installed"
@@ -41,3 +50,5 @@ fi
 echo "Folder: $TARGET"
 echo "Files created: $created. Existing files kept: $kept."
 echo "Git: $git_state"
+[ -n "${map_gi:-}" ] && echo "$map_gi"
+[ -n "${map_cm:-}" ] && echo "$map_cm"

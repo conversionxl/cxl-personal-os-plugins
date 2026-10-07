@@ -2,6 +2,10 @@
 
 This folder is a personal OS. **Read `CLAUDE.md` first and follow it.** It holds the owner's profile, the folder rules, and how they like to work. This file exists so tools other than Claude Code (Codex, GitHub Copilot, Cursor, Gemini CLI, Grok and others) find the same rules. Where the two disagree, `CLAUDE.md` wins.
 
+## Folder names
+
+If `.claude/folders.json` exists, it maps standard folders to the names this folder already uses (for example `{"projects": "PROJECTS"}`). Wherever `CLAUDE.md`, a routine or a skill names a standard folder (`projects/`, `raw/`, `wiki/`, `daily-logs/` and so on), use the mapped folder instead, subfolders included. A folder that is not listed keeps its standard name.
+
 ## If your tool does not run the hooks
 
 In Claude Code, hooks load the two newest daily logs at the start of a session and write a new log when it ends. Most other tools do not run them, so do it by hand:
