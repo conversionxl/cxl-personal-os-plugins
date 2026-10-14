@@ -13,18 +13,18 @@ You install the plugin into Claude, and Claude keeps its own copy. Your working 
 | | The plugin (this repository) | Your folder |
 |---|---|---|
 | What it is | The commands, hooks and skills | Your projects, logs, memory and `CLAUDE.md` |
-| Where it lives | In Claude, installed from **Customize** | Anywhere on your computer, such as `Documents/personal-os` |
+| Where it lives | In Claude, installed from **Settings → Plugins** | Anywhere on your computer, such as `Documents/personal-os` |
 | How you get it | Install it (below). Never download it | Make an empty folder and run `/personal-os:setup` in it |
 
 Want the repository route instead, with your own git copy to open in VS Code? That's the [starter repo](https://github.com/conversionxl/cxl-personal-os), not this one.
 
 ## Install
 
-Install it **one way only**: from Claude's settings. Installed twice, every hook runs twice.
+Install it **one way only**: from **Settings → Plugins** in Claude. Installed twice, every hook runs twice.
 
-1. Open Claude: claude.ai or the desktop app ([claude.ai/download](https://claude.ai/download)). Open **Customize** in the left sidebar. In Cowork, open the Cowork tab first.
-2. Click **Browse plugins**, then **Personal**, then **+**, then **Add marketplace from GitHub**.
-3. Enter `https://github.com/conversionxl/cxl-personal-os-plugins`, then add **personal-os**.
+1. Open Claude: claude.ai or the desktop app ([claude.ai/download](https://claude.ai/download)).
+2. Open **Settings → Plugins**, click **Add → Add marketplace**, and choose the GitHub repo option.
+3. Enter `conversionxl/cxl-personal-os-plugins`, then add **Personal os**. It then shows under **From marketplaces you added**.
 4. Make an empty folder, such as `Documents/personal-os`. Open it in either:
    - the desktop app's **Code** tab, with **Environment** set to **Local** and the folder picked as **Project folder** (set to Cloud, it only offers repositories), or
    - **Cowork**. Commands work there, but daily logs are not automatic (see below).
@@ -33,7 +33,7 @@ Install it **one way only**: from Claude's settings. Installed twice, every hook
 
 The plugin is saved to your claude.ai account, not your computer. Claude syncs it to chat, Cowork, the desktop app, VS Code and the terminal, so you install it once. Code on claude.ai is the one exception: it only runs cloud sessions on a GitHub repository, and cloud sessions don't load plugins. For the Code tab, use the desktop app.
 
-**Only if you can't use Customize:** in a terminal or VS Code session, in an empty folder:
+**Only if you can't use Settings → Plugins:** in a terminal or VS Code session, in an empty folder:
 
 ```
 /plugin marketplace add conversionxl/cxl-personal-os-plugins
@@ -41,7 +41,7 @@ The plugin is saved to your claude.ai account, not your computer. Claude syncs i
 /personal-os:setup
 ```
 
-This makes a second, local copy that lives on this computer only. Never use it as well as the Customize route.
+This makes a second, local copy that lives on this computer only. Never use it as well as the Settings → Plugins route.
 
 ## Troubleshooting: a local copy and a synced copy
 
@@ -49,7 +49,7 @@ A plugin reaches Claude Code in one of two ways:
 
 | Copy | How it got there | Listed in `/plugin` as |
 |---|---|---|
-| **Synced** (the one to keep) | Added in **Customize** on claude.ai or the desktop app | `personal-os@synced` |
+| **Synced** (the one to keep) | Added in **Settings → Plugins** on claude.ai or the desktop app | `personal-os@synced` |
 | **Local** | Typed `/plugin marketplace add` and `/plugin install` in a terminal or VS Code | `personal-os@cxl-personal-os-plugins` |
 
 **Signs you have both:** two daily logs for the same session, the session-start context printed twice, or every command listed twice.
@@ -62,13 +62,13 @@ Remove the local copy of the personal-os plugin and its cxl-personal-os-plugins 
 
 Then fully quit and reopen Claude. (By hand: `/plugin uninstall personal-os@cxl-personal-os-plugins`, then `/plugin marketplace remove cxl-personal-os-plugins`.)
 
-**Plugin missing in VS Code or the terminal after you added it in Customize?** The sync can take a few minutes. Fully quit and reopen. Don't fix it by adding the local copy: that's how you end up with two.
+**Plugin missing in VS Code or the terminal after you added it in Settings → Plugins?** The sync can take a few minutes. Fully quit and reopen. Don't fix it by adding the local copy: that's how you end up with two.
 
 **Opened this repository as your folder by mistake?** Close it, make an empty folder of your own, install the plugin as above, and run `/personal-os:setup` there. The downloaded copy can be deleted.
 
 ## Updating
 
-New versions don't install themselves on a personal marketplace. To update: **Plugins → Add → Manage marketplaces → ⋮** next to the marketplace → **Check for updates**. Your folder, logs and projects are untouched. (Automatic sync needs the Claude GitHub App to have access to the repo; that is not set up.)
+New versions don't install themselves on a personal marketplace. To update: **Settings → Plugins → Add → Manage marketplaces → ⋮** next to the marketplace → **Check for updates**. Your folder, logs and projects are untouched. (Automatic sync needs the Claude GitHub App to have access to the repo; that is not set up.)
 
 ## Where it works
 
@@ -105,7 +105,7 @@ The plugin is installed once for your whole account, so its hooks would otherwis
 
 ## Workshop plugins
 
-Each workshop has its own plugin in its own marketplace. Add each one from **Customize** the same way as personal-os, then run its setup in your personal OS folder. The same rules apply: install from Customize, don't download the repository, and keep one copy.
+Each workshop has its own plugin in its own marketplace. Add each one from **Settings → Plugins** the same way as personal-os, then run its setup in your personal OS folder. The same rules apply: install from Settings → Plugins, don't download the repository, and keep one copy.
 
 | Plugin | Add this marketplace | Setup | Adds |
 |---|---|---|---|
