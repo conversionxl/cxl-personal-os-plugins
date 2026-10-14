@@ -6,7 +6,7 @@ description: Build your personal OS in the current folder (folders, CLAUDE.md, m
 
 Set up a personal OS in the folder this session is working in.
 
-1. **Check the folder.** List what is in it. If it already holds `.claude/personal-os.json`, say it is already set up and go straight to step 4. If it holds other files, say that nothing will be overwritten (existing files are kept) and ask whether to continue. An empty folder needs no question.
+1. **Check the folder.** List what is in it. If it already holds `.claude/personal-os.json`, say it is already set up and go straight to step 4. If it holds `.claude/hooks/auto-shutdown.sh`, it is a personal OS cloned from a starter repo that runs its own hooks: say so, say nothing needs setting up (the plugin's hooks stay off there, so there is one daily log a day), and stop. If it holds other files, say that nothing will be overwritten (existing files are kept) and ask whether to continue. An empty folder needs no question.
    **Their own folders first.** If the folder holds folders of their own, run step 2b of `<plugin root>/commands/start.md` ("Your own folders") now, before the script, so the personal OS files land in their folders instead of new standard ones.
 2. **The plugin root** is `${CLAUDE_PLUGIN_ROOT}`. The session context also has a line starting `personal-os plugin` with the version and the same path.
 3. **Run the setup script** and show its output:

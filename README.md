@@ -101,7 +101,7 @@ Keep them. Run `/personal-os:setup` in the folder you already use. If it holds f
 
 ## How the hooks stay out of your other folders
 
-The plugin is installed once for your whole account, so its hooks would otherwise run in every folder you open. They run only where `/personal-os:setup` has written `.claude/personal-os.json`. Delete that file to switch them off in a folder.
+The plugin is installed once for your whole account, so its hooks would otherwise run in every folder you open. They run only where `/personal-os:setup` has written `.claude/personal-os.json`. Delete that file to switch them off in a folder. In a folder cloned from a starter repo, which runs its own copies from `.claude/hooks/`, they stay off even with the marker, so you never get two daily logs.
 
 ## Workshop plugins
 

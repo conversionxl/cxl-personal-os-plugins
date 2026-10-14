@@ -7,6 +7,16 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 TARGET="${1:-$PWD}"
 cd "$TARGET"
 
+# A folder cloned from a starter repo (cxl-personal-os, cxl-marketing-brain,
+# cxl-campaign-engine) already runs its own hooks. Setting the plugin up on
+# top would give every day two daily logs, so stop before anything is written.
+if [ -f .claude/hooks/auto-shutdown.sh ]; then
+  echo "Folder: $TARGET"
+  echo "Already a personal OS: this folder runs its own hooks from .claude/hooks/, so daily logs, memory and the commands already work here."
+  echo "Nothing was changed. The plugin's hooks stay off in this folder."
+  exit 0
+fi
+
 # A folder map (.claude/folders.json, written by the "Your own folders" step
 # before this script runs) sends each template file to the user's own folder.
 . "$ROOT/hooks/lib-folders.sh"
