@@ -41,7 +41,7 @@ done > "$src"
   cat "$HERE/team-update-prompt.md"
   printf '\n\nPeriod: week of %s (Monday to Sunday).\n\n=== DAILY LOGS ===\n' "$monday"
   cat "$src"
-} | CC_AUTO_SHUTDOWN=1 "$CLAUDE_BIN" -p --model sonnet > "$tmp" 2>/dev/null
+} | CC_AUTO_SHUTDOWN=1 "$CLAUDE_BIN" -p --no-session-persistence --model sonnet > "$tmp" 2>/dev/null
 
 [ -s "$tmp" ] || exit 0
 grep -q '^NO_UPDATE' "$tmp" && exit 0
