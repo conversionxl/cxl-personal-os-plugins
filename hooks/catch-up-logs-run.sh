@@ -111,7 +111,7 @@ while IFS= read -r d; do
         | walk(if type == "string" and (length > $cap) then .[0:$cap] + "…[truncated]" else . end)
       ' "$f" 2>/dev/null
     done
-  } | CC_AUTO_SHUTDOWN=1 "$CLAUDE_BIN" -p --model sonnet > "$tmp" 2>/dev/null
+  } | CC_AUTO_SHUTDOWN=1 "$CLAUDE_BIN" -p --no-session-persistence --model sonnet > "$tmp" 2>/dev/null
 
   # Write only if we got back a valid log. Where the day already holds
   # hand-authored content, append under its own heading so the existing

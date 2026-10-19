@@ -65,7 +65,7 @@ tmp="$(mktemp)"
   cat "$prompt_file"
   printf "\n\nToday's date: %s\n\n=== SESSION TRANSCRIPT (JSONL, one message per line) ===\n" "$today"
   cat "$slice"
-} | CC_AUTO_SHUTDOWN=1 "$CLAUDE_BIN" -p --model sonnet > "$tmp" 2>/dev/null
+} | CC_AUTO_SHUTDOWN=1 "$CLAUDE_BIN" -p --no-session-persistence --model sonnet > "$tmp" 2>/dev/null
 
 # Only keep the output if it is actually a log. A non-empty check is not enough:
 # an API error string is non-empty, and writing it here would poison the day
