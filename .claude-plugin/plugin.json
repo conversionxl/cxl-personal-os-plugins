@@ -1,9 +1,9 @@
 {
   "name": "personal-os",
-  "version": "0.1.9",
-  "description": "Personal OS for the CXL AI Native Marketer cohort: project folders, daily logs written automatically, memory that travels with your folder, and the /personal-os:start, brief, ingest, shutdown, lint and team-update commands. Run /personal-os:setup in an empty folder to begin.",
+  "version": "0.2.0",
+  "description": "Personal OS for the CXL AI Native Marketer cohort: project folders, daily logs written automatically, memory that travels with your folder, and the /personal-os:start, brief, ingest, shutdown, lint and team-update commands. Also includes guided setup for four AI visibility builds: /personal-os:aeo-qualitybuild-instructions, aeo-goingdeep-instructions, aeo-goingwide-instructions and aeo-baseline-instructions. Run /personal-os:setup in an empty folder to begin.",
   "author": { "name": "CXL", "email": "hesh@cxl.com" },
   "homepage": "https://github.com/conversionxl/cxl-personal-os-plugins",
   "repository": "https://github.com/conversionxl/cxl-personal-os-plugins",
-  "keywords": ["cxl", "personal-os", "daily-logs", "ai-native-marketer"]
+  "keywords": ["cxl", "personal-os", "daily-logs", "ai-native-marketer", "ai-visibility", "aeo", "geo"]
 }
