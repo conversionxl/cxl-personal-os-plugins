@@ -28,6 +28,8 @@ The learner starts from **nothing**: no files, no code, no Google accounts set u
 8. **Say what could go wrong** at each step in one line, with the fix.
 9. If they pass a step number as the argument, quickly check the earlier steps are in place and resume there.
 10. No em dashes in anything you write or generate. Do not use "real" or "actually" as filler. Keep each message short.
+11. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (GA4, n8n).
+12. **Reuse brand answers.** Brand name, spellings, domain, and property details are asked once, in the brand step, and saved to `ai-visibility/profile.json` (in the existing `ai-visibility` folder under `projects/`, or `projects/ai-visibility/`; names and paths only, never keys). If that file already exists from another build, show what it holds in one line and ask for "ok" or changes instead of asking again.
 
 ## Opening message (send first, then wait for their pacing answer)
 
@@ -84,6 +86,9 @@ These definitions are the same for every learner and every build, so a number me
 
 ## Step 2: Quick check before we start
 
+**Already have Python and your project folder ready?** Reply "skip" and I'll move on after checking `python3 --version` and the build folder. If not, follow the steps below.
+
+
 **What this step does:** makes sure your computer, folder and Python are ready, so nothing surprises you later.
 
 **What you do:**
@@ -97,7 +102,10 @@ These definitions are the same for every learner and every build, so a number me
 
 ## Step 3: Set up your API keys
 
-Same four keys as the other builds. If `ANTHROPIC_API_KEY` and others are already set, check by name, say what you found, and move on.
+**Already have your API keys set up?** Reply "skip" and I'll move on after checking each key by name; I only walk you through any that are missing. If not, follow the steps below.
+
+
+Same four keys as the other builds. 
 
 **What this step does:** each AI tool is asked through its API (a way for programs to talk to the tool). Each needs a key (a long password) from an account with billing turned on. Claude is required. The others are optional.
 
@@ -119,10 +127,11 @@ No restart is needed. Do not paste a key into this chat.
 
 Search Console is Google's free tool that shows which searches bring people to your site. It supplies the real questions for this build.
 
-First ask: **"Is your website already in Google Search Console? (yes / no / not sure)"** and wait.
+**Check first, before you ask anything.** The learner may already have Google connected from the baseline build. Look for an existing setup on their machine: a Search Console property in `ai-visibility/profile.json`, and `GOOGLE_APPLICATION_CREDENTIALS` (or a similar key file path) in `.mcp.json`, `.claude/settings.json`, `.claude/settings.local.json` and `~/.claude/settings.json`. If you find a key file, read its field names and `type` only, never its contents; it must be `service_account`. If a Search Console connector is available, use it to list the properties the account can see. If you find a Search Console property and a working key file, show the learner what you found in one line, ask them to confirm, and go straight to the sub-step that gives the service account access to this property (reuse the key file where it is; do not move it, other tools depend on that path). If you find only part of it, skip only the parts you found.
 
-- **Yes:** skip to Step 4 Part B (the connection). Ask them to open search.google.com/search-console and tell you the exact property name shown in the top-left picker. Domain properties look like `sc-domain:example.com`, URL properties look like `https://www.example.com/`.
-- **No or not sure:** do Part A first.
+If nothing was found, open with this line:
+
+**Already have your site in Search Console?** Reply "skip" and send me the exact property name shown in the top-left picker at search.google.com/search-console. Domain properties look like `sc-domain:example.com`, URL properties look like `https://www.example.com/`. Then go straight to Part B. If not, do Part A first.
 
 ### Part A: If you haven't set up Search Console yet
 
@@ -147,6 +156,8 @@ First ask: **"Is your website already in Google Search Console? (yes / no / not 
 
 Explain: Claude Code reads your data through a **service account**, a robot login with its own email address that you give read-only access. You'll download one key file for it. That file is a password: never share it or paste it here.
 
+**Already made a Google service account key file for another build (for example baseline)?** Reply "skip" and I'll check the file exists and is valid JSON (field names only). Then you do only 4c (turn on the Search Console API), 4f (give the same service account access to this property) and 4g. If not, give these one sub-step at a time. Note: a Google connector inside Claude is not enough here, because the tool we build signs in with this key file itself.
+
 Give these one sub-step at a time:
 
 **4b. Create a Google Cloud project.** Go to console.cloud.google.com and sign in with the same Google account. Click the project picker at the top, New Project, name it "ai-visibility", Create. (Google Cloud is free for this; you will not be charged.) Tell me "done".
@@ -168,9 +179,9 @@ Give these one sub-step at a time:
 
 **What this step does:** sets your brand as "us" so the report can tell you from competitors. You don't list competitors: the report finds who AI recommends and proposes the set.
 
-**What you do:** reply with your brand name, other spellings, your website domain, and your Search Console property name exactly as shown (for example `sc-domain:acme.com`).
+**What you do:** I fill in everything the profile and my live checks already know and show it in one line. You reply "ok" or send changes. Only for what is missing, reply with: your brand name, other spellings, your website domain, and your Search Console property name exactly as shown (for example `sc-domain:acme.com`). You will not be asked for these again in any other build.
 
-**What you should see:** I save them to `projects/ai-visibility/wide-run/config.json` and show you the lines I wrote.
+**What you should see:** I save them to the shared profile (`ai-visibility/profile.json`), write `projects/ai-visibility/wide-run/config.json` from it, and show you the lines I wrote.
 
 **Tell me when:** you send the four answers.
 
@@ -187,6 +198,7 @@ Give these one sub-step at a time:
 Spec (build exactly this):
 
 - Python 3.9 compatible, standard library only (no `X | Y` type syntax, no `match`). Every command accepts `--mock` (canned data, no network).
+- **Certificates on a Mac:** Python from python.org has no trusted certificates until "Install Certificates.command" is run, and learners often skip it, which fails the Google sign-in and the AI tool calls with `CERTIFICATE_VERIFY_FAILED`. Build every HTTPS call with an `ssl` context that falls back to the system bundle `/etc/ssl/cert.pem` when the default context has no certificates. Standard library only, nothing to install.
 - Commands: `questions` (pull Search Console questions), `run --questions <csv> --limit <n> --out <dir>`, `brands --run <dir>`, `report --run <dir>`.
 - **Google sign-in:** read the service account key file path from `config.json`. Build a signed login request (a JWT with the scope `https://www.googleapis.com/auth/webmasters.readonly`) by signing with `openssl dgst -sha256 -sign` through `subprocess`, exchange it at Google's token endpoint, then call the Search Console API. Take endpoint and field names from Google's current documentation, fetched at build time, never from memory. The private key comes from the `private_key` field of the key file. Write it to a temporary file that only the user can read (permissions 600), sign with it, and delete the file straight afterwards, even if something fails. Never print or log the private key or token.
 - **AI providers:** same rules as the quality build. Fetch each provider's current API docs (OpenAI Responses API, Gemini `generateContent`, Perplexity, Anthropic Messages) at build time for model names, endpoints, and web search options. Put model names in `config.json`. Web search on where supported. Retry 429 with a pause. Skip any provider with no key and say so. If `projects/ai-visibility/brand-accuracy/brand_accuracy.py` exists, reuse its provider code.
@@ -199,7 +211,7 @@ Spec (build exactly this):
 
 ## Step 7: Build the question set
 
-**What this step does:** builds the questions the AI tools will be asked. Two halves: up to **600 real questions from Search Console** (question-style searches from the last 90 days, brand searches removed, sorted by how often they're seen) and **400 fan-out questions** (20 topics you want to be known for but barely show up for, 20 questions each, worded the way a buyer would ask ChatGPT, with no brand names). That is **1,000 questions**.
+**What this step does:** builds the questions the AI tools will be asked. Two halves: up to **600 real questions from Search Console** (question-style searches from the last 90 days, brand searches removed, sorted by how often they're seen) and **400 fan-out questions** (20 topics you want to be known for but barely show up for, 20 questions each, worded the way a buyer would ask ChatGPT, neutral and factual, with no brand names and no wording that suggests an answer). That is **1,000 questions**.
 
 **What you do:** two parts.
 1. I pull the Search Console questions with `questions`.
