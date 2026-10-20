@@ -96,7 +96,9 @@ These definitions are the same for every learner and every build, so a number me
 
 GA4 is Google's free tool that counts visits to your site and where they came from. It is where AI traffic shows up.
 
-First ask: **"Is Google Analytics 4 already on your website? (yes / no / not sure)"** and wait.
+**Check first, before you ask anything.** The learner may already have Google connected from another tool. Look for an existing setup on their machine: `GA4_PROPERTY_ID` and `GOOGLE_APPLICATION_CREDENTIALS` (or a similar key file path) in `.mcp.json`, `.claude/settings.json`, `.claude/settings.local.json` and `~/.claude/settings.json`. If you find a key file, read its field names and `type` only, never its contents; it must be `service_account`. If a Search Console connector is available, use it to list the properties the account can see. If you find a property ID, a Search Console property and a working key file, show the learner what you found in one line, ask them to confirm, and skip to Step 6 (reuse the key file where it is; don't move it, other tools depend on that path). If you find only part of it, skip only the parts you found.
+
+Otherwise, first ask: **"Is Google Analytics 4 already on your website? (yes / no / not sure)"** and wait.
 
 - **Yes:** skip to Step 3 Part B. Ask them to open analytics.google.com, pick the right property, and send you the **GA4 property ID** (Admin, Property details, a number like `123456789`). It is not a secret.
 - **No or not sure:** do Part A first. Tell them: if GA4 was set up only recently, it can only show data from the day it was installed.
@@ -177,7 +179,16 @@ One sub-step at a time:
 
 **What this step does:** GA4 doesn't reliably label AI visits for you. We define a list of AI tool sources (the site a visitor came from) so we can count them.
 
-**What you do:** I propose the list: `chatgpt.com`, `chat.openai.com`, `perplexity.ai`, `gemini.google.com`, `claude.ai`, `copilot.microsoft.com`, `you.com`, `meta.ai`. After the tool exists (Step 8) I check your last 90 days of GA4 sources for AI tools I missed and show you anything new. You tell me what to add or remove.
+**What you do:** I propose the list, grouped by provider so it's easy to check:
+- OpenAI: `chatgpt.com`, `chat.openai.com`, `openai`
+- Google: `gemini.google.com`, `bard.google.com`, `gemini`
+- Anthropic: `claude.ai`
+- Microsoft: `copilot.microsoft.com`, `copilot.com`, `copilot.cloud.microsoft`
+- xAI: `grok.com`, `x.ai`
+- Perplexity: `perplexity.ai`, `perplexity`
+- Others: `deepseek.com`, `chat.mistral.ai`, `chat.qwen.ai`, `kimi.com`, `meta.ai`, `you.com`, `poe.com`, `phind.com`, `pi.ai`
+
+The bare names (`openai`, `gemini`, `perplexity`) are tagged links, where the AI tool sets the source itself instead of a web address. A visit counts when its source equals an entry or is a subdomain of one, so `www.perplexity.ai` counts and `max.ai` doesn't count as `x.ai`. Leave out `x.com` and `t.co`: Grok inside the X app can arrive that way, but so does ordinary X traffic, so say this under the limits instead. After the tool exists (Step 8) I check your last 90 days of GA4 sources for AI tools I missed and show you anything new. You tell me what to add or remove.
 
 **What you should see:** a short list saved as the AI source pattern in `config.json`. If your GA4 has a channel group that includes AI, I note it so I can cross-check counts. About 5 minutes.
 
@@ -198,10 +209,11 @@ Spec (build exactly this):
 - Python 3.9 compatible, standard library only (no `X | Y` type syntax, no `match`). Every command accepts `--mock` (canned data, no network).
 - Commands: `run` (fetch, snapshot if none exists, report) and `report --run <dir>` (rebuild the report from saved data without fetching).
 - **Google sign-in:** read the key file path from `config.json`. Build a signed login request (a JWT) by signing with `openssl dgst -sha256 -sign` through `subprocess`, exchange it at Google's token endpoint for a token with read-only scopes for GA4 (`analytics.readonly`) and Search Console (`webmasters.readonly`). Fetch the current endpoints, scopes, and request formats from Google's documentation (GA4 Data API `runReport`, Search Console `searchAnalytics.query`) at build time, never from memory. The private key comes from the `private_key` field of the key file. Write it to a temporary file that only the user can read (permissions 600), sign with it, and delete the file straight afterwards, even if something fails. Never print or log the key or token.
+- **Certificates on a Mac:** Python from python.org has no trusted certificates until "Install Certificates.command" is run, and learners often skip it, which fails the sign-in with `CERTIFICATE_VERIFY_FAILED`. Build every HTTPS call with an `ssl` context that falls back to the system bundle `/etc/ssl/cert.pem` when the default context has no certificates. Standard library only, nothing to install.
 - **GA4 data (runReport):** monthly sessions by default channel group for the last 13 months; monthly sessions by source; the last 90 days of landing pages for sessions whose source matches the AI source pattern; key events and revenue for AI sessions if the property records them. Set a high row limit and **check that no result hit its row limit** (rows returned equals the reported row count). If one did, report it and narrow or page the query.
 - **Search Console data (searchAnalytics.query):** daily clicks and impressions for the last 90 days; branded queries (query matches the brand terms); conversational queries (queries of 10 or more words). If there is no data yet, say so.
 - **Cross-check:** if the property has a channel group that includes AI, compare its count with the AI-source count and report any gap larger than 10%.
-- **Snapshot:** if `snapshots/day-zero.json` does not exist, write it with today's headline numbers. **Never overwrite or delete it.** Later runs show change versus it. A reset only happens if the learner explicitly asks.
+- **Snapshot:** if `snapshots/day-zero.json` does not exist, write it with today's headline numbers. **Never overwrite or delete it.** Later runs show change versus it. A reset only happens if the learner explicitly asks, and it renames the old file to `day-zero-superseded-<date>.json` rather than deleting it.
 - **Report:** write `runs/<date>/report.md` and `report.html` with: AI visits and share of traffic last full month with the trend; conversions or revenue from AI (or a clear "not tracked" note); the top AI tool; the top AI landing pages and top converting pages; the branded search trend; the conversational search trend; the change versus day zero; and the limits (below). Take every number from fetched data, never from memory.
 - **Limits to state in the report:** AI Overviews and AI Mode clicks are counted inside Google organic and can't be separated; some AI app visits arrive as Direct with no source, so AI traffic is undercounted; revenue may include renewals; a new setup has little history.
 - Compute every metric exactly as defined in Standard calculations.
@@ -214,6 +226,8 @@ Spec (build exactly this):
 **What you do:** say go. I run `python3 baseline.py run` from `projects/ai-visibility/baseline/` inside `zsh -lc '...'`.
 
 **What you should see:** about a minute of fetching, then `report.html` (to look at and share), `report.md`, and `snapshots/day-zero.json`. I tell you the result of two checks: that no GA4 result hit its row limit, and, if your GA4 has an AI channel, whether my AI count matches it. Then I show you any AI sources I found in your data that aren't on our list (Step 7) and ask whether to add them.
+
+**If you add sources now:** day zero was saved with the old list, so later runs would show a jump that comes from the list, not from growth. Offer to reset day zero, and recommend it while the snapshot is minutes old. Reset only on the learner's yes, and never delete the old snapshot: rename it to `snapshots/day-zero-superseded-<date>.json`, then rerun so a new `day-zero.json` is written. The rename keeps the reset reversible.
 
 **Tell me when:** "go".
 
@@ -266,7 +280,7 @@ Run from the project folder `projects/ai-visibility/baseline/`.
 
 **Formulas (always use these).** AI visits = GA4 sessions whose source matches the AI source list. AI share = AI sessions ÷ all sessions, same month. AI conversion rate = AI conversions ÷ AI sessions. Branded clicks = Search Console clicks on queries matching the brand pattern minus the exclude pattern. Conversational searches = queries of 10 or more words. A change in a count is relative %: (new minus old) ÷ old. A change in a share is in percentage points. Use full months only. If a denominator is zero, show "n/a".
 
-**Rules.** Never edit or delete `snapshots/day-zero.json` unless the user explicitly asks to reset day zero. Never print the Google key file or its path contents. Take every number from the script's output. No em dashes.
+**Rules.** Never edit or delete `snapshots/day-zero.json`. If the user explicitly asks to reset day zero, rename it to `snapshots/day-zero-superseded-<date>.json` and rerun. Never print the Google key file or its path contents. Take every number from the script's output. No em dashes.
 ~~~
 
 Close with next steps: pair this with the quality build (is AI right about you?) and the going-wide build (how often are you named?). Together they show accuracy, visibility, and value.
