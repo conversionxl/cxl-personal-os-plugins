@@ -27,6 +27,8 @@ The learner starts from **nothing**: no files, no code, no template. You build e
 7. If they pass a step number as the argument, quickly check the earlier steps are in place and resume there.
 8. No em dashes in anything you write or generate. Do not use "real" or "actually" as filler.
 9. Keep each message short enough to read without scrolling much.
+10. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (GA4, Search Console, n8n).
+11. **Reuse brand answers.** Brand name, spellings, domain, and property details are asked once, in the brand step, and saved to `ai-visibility/profile.json` (in the existing `ai-visibility` folder under `projects/`, or `projects/ai-visibility/`; names and paths only, never keys). If that file already exists from another build, show what it holds in one line and ask for "ok" or changes instead of asking again.
 
 ## Opening message (send this first, then wait for their pacing answer)
 
@@ -81,17 +83,20 @@ These definitions are the same for every learner and every build, so a number me
 
 ## Step 2: Start your fact sheet (the main exercise)
 
+**Already have a fact sheet (a `facts.csv` with your facts)?** Reply "skip" and I'll move on after checking the file and counting the facts. If not, follow the steps below.
+
+
 **What this step does:** the fact sheet is the list of right answers every AI answer is checked against. The check is only as good as this file, so write it from sources you trust (your About page, pricing page, brand guidelines), never from what an AI told you. We start here because it is the part that takes the most thought.
 
 **What you do:**
 1. Go to sheets.google.com (or open Excel) and create a new spreadsheet. Name it "Brand Fact Sheet".
-2. In row 1, type these four column names exactly, one per cell, in this order: `id`, `topic`, `correct_answer`, `known_wrong`.
+2. In row 1, type these four column names exactly, one per cell, in this order: `id`, `fact`, `correct_answer`, `known_wrong`.
    - `id`: F01, F02, F03 and so on
-   - `topic`: a short label, such as "Founder" or "Plan name"
+   - `fact`: a short label, such as "Founder" or "Plan name"
    - `correct_answer`: the fact in one or two sentences, the way you want AI to say it
    - `known_wrong`: what AI tends to get wrong: old names, old prices, myths, other things with the same name. Can be empty.
 3. Fill one row per fact. **The full build uses 50 facts. For the small test you only need 12.** Start with the 12 most important and keep adding after the test.
-4. **Not sure what to include? Start from this list.** Each question below is one row. The question (shortened) is the `topic`, and your answer, taken from your own pages and not from an AI, is the `correct_answer`:
+4. **Not sure what to include? Start from this list.** Each question below is one row. The question (shortened) is the `fact`, and your answer, taken from your own pages and not from an AI, is the `correct_answer`:
    - What do we do, in one sentence?
    - Who is it for?
    - What are our main products or programs?
@@ -117,6 +122,8 @@ These definitions are the same for every learner and every build, so a number me
 
 ## Step 3: Quick check before we start
 
+**Already have Python and your project folder ready?** Reply "skip" and I'll move on after checking `python3 --version` and the build folder. If not, follow the steps below.
+
 **What this step does:** makes sure your computer, folder and Python are ready, so nothing surprises you later.
 
 **What you do:**
@@ -129,6 +136,9 @@ These definitions are the same for every learner and every build, so a number me
 **Tell me when:** "ready".
 
 ## Step 4: Set up your API keys
+
+**Already have your API keys set up?** Reply "skip" and I'll move on after checking each key by name; I only walk you through any that are missing. If not, follow the steps below.
+
 
 **What this step does:** each AI tool is asked through its API (a way for programs to talk to the tool), and each one needs a key (a long password) from an account with billing turned on. Claude is required because Claude checks the answers. The other three are optional; any you skip are left out.
 
@@ -150,9 +160,9 @@ No restart is needed. Do not paste a key into this chat.
 
 **What this step does:** sets the brand name the tool looks for in answers, so it also recognises other spellings.
 
-**What you do:** reply with three things: your brand name, other spellings people use (for example "Acme Inc", "Acme.io"), and your website domain.
+**What you do:** if the shared profile already has your brand name, other spellings and website domain, I show them in one line and you reply "ok" or send changes. Only for what is missing, reply with: your brand name, other spellings people use (for example "Acme Inc", "Acme.io"), and your website domain. You will not be asked for these again in any other build.
 
-**What you should see:** I save them to `projects/ai-visibility/brand-accuracy/config.json` and show you the three lines I wrote. Pages on your own domain will be treated as "our site" in the report.
+**What you should see:** I save them to the shared profile (`ai-visibility/profile.json`), write `projects/ai-visibility/brand-accuracy/config.json` from it, and show you the three lines I wrote. Pages on your own domain will be treated as "our site" in the report.
 
 **Tell me when:** you send the three answers.
 
@@ -164,7 +174,7 @@ No restart is needed. Do not paste a key into this chat.
 1. In your spreadsheet, download it as CSV (a plain spreadsheet file). Google Sheets: File, Download, Comma-separated values (.csv). Excel: File, Save As, CSV UTF-8.
 2. Tell me "downloaded". I'll list the `.csv` files in your Downloads folder (names only) so you can confirm which one is yours, then move it into `projects/ai-visibility/brand-accuracy/` as `facts.csv` for you, and open that folder.
 
-**What you should see:** I read the file and check the header, that every row has an id and a correct answer, there are no placeholders like [X], and no duplicate ids. I tell you how many facts there are (you need at least 12 for the test) and anything to fix. About a minute.
+**What you should see:** I read the file and check the header is exactly `id`, `fact`, `correct_answer`, `known_wrong` (extra columns such as `source` are fine; if the first column after `id` is called `topic`, I rename it to `fact` in the file and tell you), that every row has an id and a correct answer, there are no placeholders like [X], and no duplicate ids. I tell you how many facts there are (you need at least 12 for the test) and anything to fix. About a minute.
 
 **Tell me when:** "downloaded".
 
@@ -182,9 +192,9 @@ No restart is needed. Do not paste a key into this chat.
 
 | Avoid | Use instead |
 |---|---|
-| Why is Acme expensive? | What is Acme's pricing? |
-| Does Acme offer payroll courses? | What courses does Acme offer? |
-| Why shouldn't people trust Acme? | What do customer reviews say about Acme? |
+| Acme was founded by Jo Lee, right? | Who founded Acme? |
+| Isn't Acme known for fast payroll runs? | What is Acme known for? |
+| Doesn't Acme offer UK payroll? | What does Acme offer? |
 
 The facts, correct answers and known wrong versions stay in the fact sheet. They never go into a question. Check every question against this rule before showing the list, and rewrite any that break it.
 
@@ -207,8 +217,9 @@ You read the questions and tell me what to change. You can also open the file in
 Spec for the file (build exactly this, nothing more):
 
 - Python 3.9 compatible, standard library only (no `X | Y` type syntax, no `match`). Check `python3 --version` first.
+- **Certificates on a Mac:** Python from python.org has no trusted certificates until "Install Certificates.command" is run, and learners often skip it, which fails the connections to the AI tools with `CERTIFICATE_VERIFY_FAILED`. Build every HTTPS call with an `ssl` context that falls back to the system bundle `/etc/ssl/cert.pem` when the default context has no certificates. Standard library only, nothing to install.
 - Commands: `run --ids <comma list, key, or all> --out <dir>`, `judge --run <dir>`, `report --run <dir>`. `--ids key` runs the questions marked `key=yes` in `probes.csv`. Every command accepts `--mock`, which uses canned answers and verdicts and makes no API calls, so the self-test is free.
-- Reads `config.json`, `facts.csv`, `probes.csv` from its own folder. Reads keys from environment variables only. Skips any provider whose key is missing and says so.
+- Reads `config.json`, `facts.csv`, `probes.csv` from its own folder. `facts.csv` has the columns `id`, `fact`, `correct_answer`, `known_wrong`; `probes.csv` has `id`, `fact_id`, `type`, `key`, `probe`. Use these exact names everywhere (the judge prompt, the report headings, the report's per-fact lists). Do not accept or invent others. Reads keys from environment variables only. Skips any provider whose key is missing and says so.
 - `run`: sends only the question text to each AI tool, never the fact, the correct answer, a known wrong version or any hint, so the answers are collected independently and only compared with the fact sheet afterwards. It sends each question once to each available provider through its official API with web search on where the API supports it. Provider APIs change often (Perplexity, for one, has moved its endpoint), so never write model names or endpoints from memory. Before writing the code, fetch each provider's current API docs (the OpenAI Responses API, the Gemini `generateContent` API, the Perplexity API, and the Anthropic Messages API) and take the model name, endpoint, and web search option from them. Put the model names in `config.json` so the learner can change them. Retries on 429 with a pause. Saves one line per answer in `answers.jsonl` (provider, question id, answer text, cited URLs when the API returns them). Prints one line per provider such as "ChatGPT: ok 15, errors 0".
 - `judge`: sends each answer plus its fact (correct answer and known wrong) to Claude. Claude lists each claim about the brand as correct, wrong, or unsupported, then gives one verdict: `right`, `partly right`, `wrong`, or `missing` (brand not mentioned or confused with something that shares the name). Saves `verdicts.jsonl`.
 - `report`: writes `report.md` and `report.html` with, in order: the short version (counts per verdict, the biggest problem), the key questions by tool, what to fix (each wrong answer, the truth, and the cited pages, flagging pages on the learner's own domain as quick wins), what is incomplete, and where the AI did not know the brand. Compute every number exactly as defined in Standard calculations (accuracy is right ÷ answered, missing is counted separately).
@@ -288,7 +299,7 @@ Run from the project folder `projects/ai-visibility/brand-accuracy/`. `test` (th
 
 **What you should see:** nothing from me. This one is yours.
 
-Then tell them what comes next: the full check (more facts, plus indirect questions), re-running after any rename or price change, and `/aeo-goingdeep-instructions` for Build 2.
+Then tell them what comes next: the full check (more facts, plus indirect questions), re-running after any rename or price change, and the going-deep setup command, `aeo-goingdeep-instructions`, for Build 2 (type `/` and pick it from the list).
 
 ## API key guide (give these steps for each tool the learner chooses)
 

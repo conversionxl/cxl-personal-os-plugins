@@ -28,6 +28,8 @@ The learner starts from **nothing**: no files, no code, possibly no Google Analy
 8. **Say what could go wrong** at each step in one line, with the fix.
 9. If they pass a step number as the argument, quickly check the earlier steps are in place and resume there.
 10. No em dashes in anything you write or generate. Do not use "real" or "actually" as filler. Keep each message short.
+11. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (AI tool keys, n8n).
+12. **Reuse brand answers.** Brand name, spellings, domain, and property details are asked once, in the brand step, and saved to `ai-visibility/profile.json` (in the existing `ai-visibility` folder under `projects/`, or `projects/ai-visibility/`; names and paths only, never keys). If that file already exists from another build, show what it holds in one line and ask for "ok" or changes instead of asking again.
 
 ## Opening message (send first, then wait for their pacing answer)
 
@@ -81,6 +83,9 @@ These definitions are the same for every learner and every build, so a number me
 
 ## Step 2: Quick check before we start
 
+**Already have Python and your project folder ready?** Reply "skip" and I'll move on after checking `python3 --version` and the build folder. If not, follow the steps below.
+
+
 **What this step does:** makes sure your computer, folder and Python are ready, so nothing surprises you later.
 
 **What you do:**
@@ -98,10 +103,12 @@ GA4 is Google's free tool that counts visits to your site and where they came fr
 
 **Check first, before you ask anything.** The learner may already have Google connected from another tool. Look for an existing setup on their machine: `GA4_PROPERTY_ID` and `GOOGLE_APPLICATION_CREDENTIALS` (or a similar key file path) in `.mcp.json`, `.claude/settings.json`, `.claude/settings.local.json` and `~/.claude/settings.json`. If you find a key file, read its field names and `type` only, never its contents; it must be `service_account`. If a Search Console connector is available, use it to list the properties the account can see. If you find a property ID, a Search Console property and a working key file, show the learner what you found in one line, ask them to confirm, and skip to Step 6 (reuse the key file where it is; don't move it, other tools depend on that path). If you find only part of it, skip only the parts you found.
 
-Otherwise, first ask: **"Is Google Analytics 4 already on your website? (yes / no / not sure)"** and wait.
+If nothing was found, open with this line:
 
-- **Yes:** skip to Step 3 Part B. Ask them to open analytics.google.com, pick the right property, and send you the **GA4 property ID** (Admin, Property details, a number like `123456789`). It is not a secret.
-- **No or not sure:** do Part A first. Tell them: if GA4 was set up only recently, it can only show data from the day it was installed.
+**Already have Google Analytics 4 on your site?** Reply "skip" and I'll move on after you send me the GA4 property ID (Admin, Property details). If not, follow the steps below.
+
+- **If they skip or say yes:** skip to Step 3 Part B. Ask them to open analytics.google.com, pick the right property, and send you the **GA4 property ID** (Admin, Property details, a number like `123456789`). It is not a secret.
+- **If not, or unsure:** do Part A first. Tell them: if GA4 was set up only recently, it can only show data from the day it was installed.
 
 ### Part A: If you haven't set up GA4 yet
 
@@ -129,10 +136,10 @@ Whether you just set it up or it already existed: Admin, Property details, copy 
 
 Search Console is Google's free tool that shows which searches bring people to your site. It supplies the branded and question-style search trends.
 
-Ask: **"Is your website already in Google Search Console? (yes / no / not sure)"** and wait.
+**Already have your site in Search Console?** Reply "skip" and I'll move on after you send me the property name shown in the top-left picker. If not, follow the steps below.
 
-- **Yes:** ask for the property name exactly as shown in the top-left picker (`sc-domain:example.com` or `https://www.example.com/`), then skip to Step 5.
-- **No or not sure:** do this.
+- **If they skip or say yes:** ask for the property name exactly as shown in the top-left picker (`sc-domain:example.com` or `https://www.example.com/`), then skip to Step 5.
+- **If not, or unsure:** do this.
 
 **4a. Add your site.** Go to search.google.com/search-console, sign in with the same Google account. Property picker, Add property. Choose **Domain** (recommended) and type `acme.com`, or **URL prefix** and type the full address like `https://www.acme.com/`. Tell me "done".
 
@@ -144,7 +151,7 @@ Ask: **"Is your website already in Google Search Console? (yes / no / not sure)"
 
 ## Step 5: Connect Claude Code to Google
 
-Explain: Claude Code reads your GA4 and Search Console data through a **service account**: a robot login with its own email address, which you give read-only access. You download one key file for it. That file is a password. Never share it or paste it here. Ask here, not earlier: **"Did you already make a service account key file for the going-wide build? (yes / no / not sure)"** If yes, reuse it and do only 5b (turn on the Google Analytics Data API), 5e, and 5g. If no or not sure, do every sub-step.
+Explain: Claude Code reads your GA4 and Search Console data through a **service account**: a robot login with its own email address, which you give read-only access. You download one key file for it. That file is a password. Never share it or paste it here. **Already made a Google service account key file for another build (for example going wide)?** Reply "skip" and I'll check the file exists and is valid JSON (field names only). Then you do only 5b (turn on the Google Analytics Data API), 5e, and 5g. If not, do every sub-step. Note: a Google connector inside Claude is not enough here, because the tool we build signs in with this key file itself.
 
 One sub-step at a time:
 
@@ -169,9 +176,9 @@ One sub-step at a time:
 
 **What this step does:** sets your site, property IDs, and the words that count as a branded search.
 
-**What you do:** reply with your website domain, Search Console property name, GA4 property ID, and the brand terms people type when they search for you (for example "acme", "acme payroll").
+**What you do:** I fill in everything the profile and my live checks already know (domain, Search Console property, GA4 property ID, brand name and terms) and show it in one line. You reply "ok" or send changes. Only for what is missing, reply with: your website domain, Search Console property name, GA4 property ID, and the brand terms people type when they search for you (for example "acme", "acme payroll"). You will not be asked for these again in any other build.
 
-**What you should see:** I save them to `projects/ai-visibility/baseline/config.json` and show you what I wrote. No keys are stored in it.
+**What you should see:** I save them to the shared profile (`ai-visibility/profile.json`), write `projects/ai-visibility/baseline/config.json` from it, and show you what I wrote. No keys are stored in it.
 
 **Tell me when:** you send the answers.
 
