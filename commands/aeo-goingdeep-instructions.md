@@ -25,11 +25,12 @@ The learner starts from **nothing**: no n8n, no Google Sheets set up for this, n
 5. **Plain words.** The learner is a marketer. Explain any technical term (workflow, node, credential, API key, test mode, canvas) the first time, in half a sentence.
 6. **Secrets.** API keys go into n8n's credential screens only, never into this chat, never into a file you write. If they paste a key in chat, tell them to delete and regenerate it, and carry on. You can check keys exist by name in their shell profile only if they set them up for earlier builds, but this build does not need the shell.
 7. **Menus move.** n8n, Google, Slack, and the AI providers change their screens often. After any "click here" instructions, say once: "If a menu is named slightly differently, look for the closest match and tell me what you see."
-8. **Say what could go wrong** at each step in one line, with the fix.
+8. **Say what could go wrong** at each step in one line, with the fix. **Read errors yourself when you can:** if an n8n connector (MCP) is connected in this session, read the workflow and its executions directly instead of asking for screenshots, and tell the learner what you found.
 9. If they pass a step number as the argument, ask what they have already done (workflow imported? sheets made? credentials connected?) and resume there.
 10. No em dashes in anything you write or generate. Do not use "real" or "actually" as filler. Keep each message short.
 11. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (GA4, Search Console, Python).
 12. **Reuse brand answers.** Brand name, spellings, and domain are asked once, in the brand step, and kept in the conversation. This build writes no files, apart from the reports folder and command in Step 12. If `ai-visibility/profile.json` exists from another build, read it and show it in one line instead of asking.
+13. **Your own folders.** If `.claude/folders.json` exists and maps `projects` (for example to `PROJECTS`), every `projects/...` path in this command is read and written at its mapped name, and so is every path in the command file you write for the learner. Never create a second `projects/` folder next to a mapped one.
 
 ## Opening message (send first, then wait for their pacing answer)
 
@@ -150,7 +151,7 @@ When they say it, tell them: the prompts are the main exercise and they're done.
 
 **Tell me when:** "imported", and tell me which boxes you can see.
 
-**Could go wrong:** "could not import" usually means the address has a typo or a line break. Copy it again from here.
+**Could go wrong:** "could not import" usually means the address has a typo or a line break. Copy it again from here. If node names end in "1" (for example "Save Answers1"), the template was imported twice into the same workflow: delete this workflow, create a new empty one, and import once.
 
 ## Step 5: Create your Results sheet
 
@@ -199,6 +200,8 @@ Column names and tab names must be spelled exactly as shown, including capital l
 
 **Tell me when:** "tools set", and tell me the list.
 
+Then check every **Ask** node for a tool on the list is switched on: a switched-off node looks greyed out on the canvas. In the template some Ask nodes may start switched off. Right-click a greyed-out node and choose Activate. Switch off (Deactivate) the Ask nodes for tools you did not list.
+
 Check that their list matches the call count you gave them in Step 2. If they changed the number of tools, recalculate and tell them.
 
 ## Step 8: Connect the nodes
@@ -218,11 +221,15 @@ One sub-step per message. After each, ask what they see.
 
 **8d. Ask Perplexity.** Same for **Ask Perplexity (web search)**: credential type **Perplexity**, paste the key. **Note:** a "Forbidden" result when you click Test connection is normal for this node. Continue anyway. Tell me what you see.
 
-**8e. Ask Gemini.** Same for **Ask Gemini (web search)**: credential type **Google Gemini(PaLM) API**, paste the key into API Key, and keep Host as `https://generativelanguage.googleapis.com`. Tell me what you see.
+**8e. Ask Gemini.** Same for **Ask Gemini (web search)**: credential type **Google Gemini(PaLM) API**, paste the key into API Key, and keep Host as `https://generativelanguage.googleapis.com`. Check that Google Search grounding (web search) is on in the node: without it Gemini answers from memory and can invent products. Tell me what you see.
 
-**8f. Google Sheets: read your prompts.** Double-click **Read Prompts**, Credential, Create new, **Google Sheets OAuth2 API**, click **Sign in with Google**, choose the account that owns your sheets and allow access. Then pick your **AI Visibility Prompts** spreadsheet and the tab **Sheet1**. Tell me what you see.
+**Check the model in each Ask node.** Open each one and read its model field back to me. If it shows a small model (a name with "mini", "nano", "lite" or "haiku"), say so: small models are cheaper but weaker at describing a brand. Keep it or switch, the learner's choice.
 
-**8g. Google Sheets: save results.** Do the same for **Save Answers** (spreadsheet **AI Visibility Results**, tab **Answers**), then **Read Previous Rates** and **Save Mention Rates** (same spreadsheet, tab **Mention Rates**). Use the same Google credential you already made on all four Google Sheets nodes. Tell me what you see.
+**Before the Google sign-ins, say this once:** signing in with Google gives n8n access to all the spreadsheets (and, for Gmail, the mailbox) of that account, not only these sheets. If that is more than you want, create a separate Google account just for this tracker, share only the two AI Visibility spreadsheets with it, and sign in with that account in 8f, 8g and 8i. The report emails then come from that account. Or skip Gmail and use Slack only.
+
+**8f. Google Sheets: read your prompts.** Double-click **Read Prompts**, Credential, Create new, **Google Sheets OAuth2 API**, click **Sign in with Google**, choose the account that owns your sheets (or the tracker account) and allow access. Then pick your **AI Visibility Prompts** spreadsheet and the tab **Sheet1**. Tell me what you see.
+
+**8g. Google Sheets: save results.** Do the same for **Save Answers** (spreadsheet **AI Visibility Results**, tab **Answers**), then **Read Previous Rates** and **Save Mention Rates** (same spreadsheet, tab **Mention Rates**). Use the same Google credential you already made on all four Google Sheets nodes. In **Save Answers** and **Save Mention Rates**, check the Operation still says **Append Row** (picking a sheet can flip it to "Get Row(s)", which saves nothing) and the column mapping is **Map Automatically**. Tell me what you see.
 
 **8h. Slack.** Double-click **Post Slack Summary**, Credential, Create new, choose **Slack OAuth2 API**, click **Connect my account**, and allow access to your Slack workspace. If n8n instead asks for a Client ID and Client Secret, that means a Slack app would have to be created first. That is too much for a first run, so skip Slack: disable the two Slack nodes (right-click each, Deactivate) and rely on the email report. Pick yourself (a direct message) or a channel. If you pick a channel, open Slack and add the n8n app to that channel, or the post will fail. Do the same for **Send Report File to Slack**. If you don't use Slack, tell me, and I'll walk you through disabling those two nodes. Tell me what you see.
 
@@ -266,6 +273,12 @@ Leave the attachment as it is. If your template's Message field already contains
 - No rows in the sheet: tab names or headers don't match Step 5.
 - No Slack message: you picked a channel and didn't add the n8n app to it.
 - Perplexity fails with "Forbidden" during the run (not just on Test connection): the key or its billing needs checking.
+- Duplicate rows in the sheet: **Retry On Fail** is on for a Save node, so a slow save was written twice. Turn it off on the Save nodes (node Settings) and keep it on the Ask nodes.
+- Everything green but answers missing: the Ask nodes are set to **On Error: Continue**, so a failed call doesn't stop the run. Check the `status` and `error` columns in the Answers tab: a row with an error is a failed call, never "brand not mentioned".
+- ChatGPT "429" or "rate limit": too many calls at once for a new OpenAI account. Run fewer repeats, or wait and run again.
+- Gemini or another tool times out: one slow tool can push the run past your plan's time limit. Drop it from `full_providers` for now, or run fewer prompts.
+- An API key is rejected although it is correct: some providers (Claude among them) only accept a key created inside a workspace or project that has billing. Create the key there.
+- Your plan's time limit is too short for even the test: run the prompts with a local script instead. Ask me and I'll set one up, or use the quality build (`aeo-qualitybuild-instructions`), which runs on your computer.
 
 ## Step 10: Turn it on
 
@@ -291,7 +304,7 @@ Leave the attachment as it is. If your template's Message field already contains
 
 **Tell me when:** "report read".
 
-Close with next steps: add or retire questions by editing the Prompts sheet (set `active` to FALSE to skip one), re-check your call count whenever you add questions, and pair this with the quality build (is AI right about you?), the going-wide build (how often are you named across 300 questions?), and the baseline (what is AI traffic worth?).
+Close with next steps: add or retire questions by editing the Prompts sheet (set `active` to FALSE to skip one), re-check your call count whenever you add questions, and pair this with the quality build (is AI right about you?), the going-wide build (how often are you named across up to 1,000 questions?), and the baseline (what is AI traffic worth?).
 
 ## Step 12: Create your /going-deep command
 
@@ -320,7 +333,7 @@ argument-hint: "[sync | read | paste] (default: save new reports, then read the 
 
 The tracker runs in n8n every Monday and emails a report: the full text is in the email body between `-----BEGIN REPORT-----` and `-----END REPORT-----`, and a Markdown file is also attached (the attachment cannot be read, so ignore it). The email subject is `AI Visibility Report <YYYY-Www>` and the saved file is named `AI-Visibility-Report-<YYYY-Www>.md` (for example `AI-Visibility-Report-2026-W43.md`). This command turns each report email into a file in the project and helps read it. It cannot see the n8n account or the Google Sheet.
 
-**Reports folder (`$R`):** `going-deep/reports/` inside the project's `ai-visibility` folder. Find that folder with `find projects -maxdepth 3 -type d -name ai-visibility`; if there is none, use `projects/ai-visibility/`. Create `$R` if it is missing. One file per week, named exactly like the attachment. Never overwrite a saved week: skip it and say so.
+**Reports folder (`$R`):** `going-deep/reports/` inside the project's `ai-visibility` folder. Find that folder with `find projects -maxdepth 3 -type d -name ai-visibility` (if `.claude/folders.json` maps `projects` to another name, search that folder instead); if there is none, use `projects/ai-visibility/` (or its mapped name). Create `$R` if it is missing. One file per week, named exactly like the attachment. Never overwrite a saved week: skip it and say so.
 
 ## 1. Save new reports (skip if the argument is `read` or `paste`)
 

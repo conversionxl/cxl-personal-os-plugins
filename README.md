@@ -95,6 +95,18 @@ New versions don't install themselves on a personal marketplace. To update: **Se
 | `/personal-os:lint` | Weekly health check, including loose and temp files and a folder cleanup plan |
 | `/personal-os:team-update` | A standup-style update from your daily logs |
 
+## AI visibility builds
+
+Guided setup for the AI visibility workshop. Each one coaches you one step at a time, from an empty folder to a report and a re-run command of your own.
+
+| Command | What it builds |
+|---|---|
+| `/personal-os:aeo-qualitybuild-instructions` | Build 1, quality: does AI get your company right? A fact sheet, a brand accuracy report, and `/answer-quality` |
+| `/personal-os:aeo-goingdeep-instructions` | Build 2, going deep: a weekly n8n tracker of how often AI names you, and `/going-deep` |
+| `/personal-os:aeo-goingwide-instructions` | Build 3, going wide: up to 1,000 questions from Search Console, who AI names instead, and `/going-wide` |
+| `/personal-os:aeo-baseline-instructions` | Build 4, baseline: what AI traffic is worth, from GA4 and Search Console, and `/baseline` |
+| `/personal-os:aeo-canonical-instructions` | Fix the sources: one canonical description of your company, an audit of your site, a swap sheet, a profile checklist for social and third-party listings, and `/canonical-check`. Run it after the quality build |
+
 ## Already have your own folders?
 
 Keep them. Run `/personal-os:setup` in the folder you already use. If it holds folders of your own, setup asks whether to reroute the personal OS to them (say `PROJECTS/` for projects and `Resources/` for the wiki) before it copies anything, and saves your answer in `.claude/folders.json`. Every hook, command, skill and agent then uses your folder names, the workshop plugins (`/marketing-brain:setup`, `/campaign-engine:setup`) put their folders inside yours, and local-only folders stay out of git under their new names. Nothing moves unless you say so. `CLAUDE.md`, `AGENTS.md` and `.claude/` stay where they are. `/personal-os:lint` checks the map each week.
