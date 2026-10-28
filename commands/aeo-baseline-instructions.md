@@ -30,6 +30,7 @@ The learner starts from **nothing**: no files, no code, possibly no Google Analy
 10. No em dashes in anything you write or generate. Do not use "real" or "actually" as filler. Keep each message short.
 11. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (AI tool keys, n8n).
 12. **Reuse brand answers.** Brand name, spellings, domain, and property details are asked once, in the brand step, and saved to `ai-visibility/profile.json` (in the existing `ai-visibility` folder under `projects/`, or `projects/ai-visibility/`; names and paths only, never keys). If that file already exists from another build, show what it holds in one line and ask for "ok" or changes instead of asking again.
+13. **Your own folders.** If `.claude/folders.json` exists and maps `projects` (for example to `PROJECTS`), every `projects/...` path in this command is read and written at its mapped name, and so is every path in the command file you write for the learner. Never create a second `projects/` folder next to a mapped one.
 
 ## Opening message (send first, then wait for their pacing answer)
 
@@ -277,7 +278,7 @@ argument-hint: ""
 
 # /baseline
 
-Run from the project folder `projects/ai-visibility/baseline/`.
+Run from the project folder `projects/ai-visibility/baseline/`. If `.claude/folders.json` maps `projects` to another name, use that folder instead.
 
 1. **Check the files.** `config.json` and `baseline.py` must be there, and `snapshots/` must exist. If one is missing, say which one and how to fix it.
 2. **Run.** Inside `zsh -lc '...'`, from that folder: `python3 baseline.py run` (about a minute). To rebuild the latest report without fetching: `python3 baseline.py report --run runs/<date>`.
@@ -290,4 +291,4 @@ Run from the project folder `projects/ai-visibility/baseline/`.
 **Rules.** Never edit or delete `snapshots/day-zero.json`. If the user explicitly asks to reset day zero, rename it to `snapshots/day-zero-superseded-<date>.json` and rerun. Never print the Google key file or its path contents. Take every number from the script's output. No em dashes.
 ~~~
 
-Close with next steps: pair this with the quality build (is AI right about you?) and the going-wide build (how often are you named?). Together they show accuracy, visibility, and value.
+Close with next steps: pair this with the quality build (is AI right about you?) and the going-wide build (how often are you named?). Together they show accuracy, visibility, and value. Sharing the baseline in the community is optional. If they want to, first list in one line what in the report is private (revenue, conversions, traffic numbers) and ask them to confirm what to share, or make a copy without those figures.
