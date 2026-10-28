@@ -2,7 +2,7 @@
 
 > A personal operating system for working with Claude Code, from the CXL AI Native Marketer cohort. Claude reads this file at the start of every session. It explains how the repo runs and how to work with its owner.
 >
-> **New here? Run `/personal-os:start`.** It walks you through setup and fills in the "About me" section below.
+> **New here? Run `/personal-os:setup`.** It walks you through setup and fills in the "About me" section below.
 
 **Writing rule: no em dashes (—), anywhere.** They are a hallmark of AI-generated text. This applies to every file in the repo, daily logs included. Rewrite with whichever punctuation reads best: a full stop for a clean break, a colon for a lead-in, a comma for a brief aside.
 
@@ -10,7 +10,7 @@
 
 ## About me
 
-<!-- /personal-os:start fills this in. Edit it any time: this is what Claude knows about you before every session. -->
+<!-- /personal-os:setup fills this in. Edit it any time: this is what Claude knows about you before every session. -->
 
 - **Name:**
 - **Role and company:**
@@ -59,7 +59,7 @@ Claude has no memory between sessions by default. This repo fixes that with plai
 
 | Command | When to run it | What it does |
 |---|---|---|
-| `/personal-os:start` | Once, after `/personal-os:setup`. Again any time you want the tour. | Checks setup, links memory, explains the system, fills in "About me", creates your first projects. |
+| `/personal-os:setup` | Once to build the folder. Again any time to re-check your setup and see your next step (`tour` for the explanation). | Builds the personal OS, checks setup, links memory, explains the system, fills in "About me", creates your first projects, and shows your workshop path. |
 | `/personal-os:brief [person\|project\|topic]` | Before a meeting or a context switch. | Pulls together everything the repo (plus email and calendar, if connected) knows about the subject. |
 | `/personal-os:ingest` | When `raw/` has things in it. | Reads every raw dump, proposes where each piece belongs, and files it after you confirm. |
 | `/personal-os:shutdown` | End of the working day. | Reconciles what got done, routes new commitments into project files, writes a rich daily log, offers to push to GitHub. |
@@ -84,7 +84,7 @@ They come from the personal-os plugin and run only in this folder (it has `.clau
 | Session end | `auto-shutdown.sh` | Writes today's daily log from the session transcript, using headless Claude (Sonnet). Appends if the day already has a log; never overwrites. |
 
 **Manual fallback (when hooks are not running).** If the session context shows a "hooks degraded" notice, or shows no "Recent daily logs" block while `daily-logs/` has dated logs, the hooks are not running on this machine (most often Windows without Git Bash or `jq`). Then:
-- Tell the user once, and point them to `/personal-os:start` to fix it.
+- Tell the user once, and point them to `/personal-os:setup` to fix it.
 - Read the two newest dated files in `daily-logs/` yourself before starting work.
 - Before the session ends, remind the user to run `/personal-os:shutdown`. It writes the daily log itself and does not depend on hooks.
 
@@ -96,8 +96,8 @@ They come from the personal-os plugin and run only in this folder (it has `.clau
 
 | Tool | Commands | Hooks and automatic daily logs |
 |---|---|---|
-| Claude Code (VS Code extension or terminal) | Type `/personal-os:start`, `/personal-os:shutdown`, and so on | Yes |
-| Desktop app: Code tab (Environment: Local) | Type `/personal-os:start`, `/personal-os:shutdown`, and so on | Yes |
+| Claude Code (VS Code extension or terminal) | Type `/personal-os:setup`, `/personal-os:shutdown`, and so on | Yes |
+| Desktop app: Code tab (Environment: Local) | Type `/personal-os:setup`, `/personal-os:shutdown`, and so on | Yes |
 | Cowork | Type `/personal-os:shutdown` and so on | No. Cowork runs hooks in its own workspace, where this folder isn't. Read the newest daily logs at the start of a session, and run `/personal-os:shutdown` at the end of each day |
 | claude.ai/code in a browser, or Environment: Cloud | Plugins do not load there | No. Open your GitHub repo and ask for what you need in plain words |
 
