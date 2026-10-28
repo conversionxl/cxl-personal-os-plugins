@@ -88,7 +88,7 @@ New versions don't install themselves on a personal marketplace. To update: **Se
 | Command | What it does |
 |---|---|
 | `/personal-os:setup` | Builds the personal OS in the current folder and makes it a git repo. Never overwrites a file |
-| `/personal-os:start` | Checks setup, explains the system, fills in "About me", creates your first projects |
+| `/personal-os:start` | Checks setup, explains the system, fills in "About me", creates your first projects, then shows your workshop path: which modules (Marketing Brain, Campaign Engine, Reporting agent) are installed in this folder, how far you are, and the setup to run next |
 | `/personal-os:brief` | Everything the folder knows about a person, project or topic |
 | `/personal-os:ingest` | Files what you dropped into `raw/` |
 | `/personal-os:shutdown` | End of day: reconciles, routes commitments, writes the daily log |

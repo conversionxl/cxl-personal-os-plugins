@@ -1,5 +1,5 @@
 ---
-description: Build your personal OS in the current folder (folders, CLAUDE.md, memory), switch on the automatic daily logs, then start the guided tour.
+description: Build your personal OS in the current folder (folders, CLAUDE.md, memory), switch on the automatic daily logs, then start the guided tour, which ends with your workshop path through the other modules.
 ---
 
 # /personal-os:setup

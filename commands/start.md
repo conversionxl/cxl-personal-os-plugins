@@ -1,11 +1,11 @@
 ---
-description: Set up and tour your personal OS. Checks prerequisites, links memory, explains folders, hooks, and commands, then personalizes CLAUDE.md and creates your first projects.
+description: Set up and tour your personal OS. Checks prerequisites, links memory, explains folders, hooks, and commands, then personalizes CLAUDE.md, creates your first projects, and shows your workshop path: which modules are installed, how far you are, and the next setup to run.
 argument-hint: [tour]
 ---
 
 # /personal-os:start
 
-Welcome the user to their personal OS and get it working. This is their first session in the repo, or they want the tour again. If `$ARGUMENTS` is `tour`, skip setup (steps 1, 2 and 2b) and step 5, and give only the explanation in steps 3 and 4.
+Welcome the user to their personal OS and get it working. This is their first session in the repo, or they want the tour again. If `$ARGUMENTS` is `tour`, skip setup (steps 1, 2 and 2b) and step 5, and give only the explanation in steps 3 and 4, then step 7.
 
 Work through the steps in order. Keep each message short and skimmable; this is an onboarding, not a lecture. Pause where the step says to wait.
 
@@ -21,6 +21,7 @@ Run these checks and show the result as one table (item | status | fix if missin
 | `gh` (optional) | `gh auth status` | Only needed to push the repo to your own GitHub. |
 | Memory link | Is `~/.claude/projects/<slug>/memory` a symlink to this repo's `.claude/memory`? The slug is the repo's absolute path with every `/` replaced by `-`. | Without it, memory stays machine-local. |
 | Git remote | `git remote -v` | Optional. With no `origin`, the folder works on this machine only; see step 2. No git at all is allowed too. |
+| Where Claude runs | The shell reports this folder, and `CLAUDE_PROJECT_DIR` is set (Code tab with Environment: Local, VS Code, or the terminal). | claude.ai in a browser cannot work on a folder, so nothing here would run. Cowork works, without automatic daily logs (see setup). |
 | Hooks running | Read `.claude/state/hooks-heartbeat`. It should exist, with `last_run` = today and `missing=` empty. | The heartbeat is written by `health.sh`, which needs only bash. No file means hooks never ran this session. A `missing=` value names what to install. |
 
 **Detect the OS first** (`uname -s`, or `$env:OS` / `ver` if bash is not available). On Windows, also check:
@@ -101,7 +102,7 @@ Finish this step with one line on the difference between the three kinds of buil
 
 Point to the examples in `.claude/skills/` and `.claude/agents/`.
 
-**Stop here if this is a `tour` run.**
+**If this is a `tour` run, go to step 7 now, then stop.**
 
 ## 5. Personalize
 
@@ -124,3 +125,26 @@ End with:
 - What was set up (a short checklist: ✅ done, ⚠️ needs their action).
 - Their first three moves: drop something into `raw/` and run `/personal-os:ingest`; run `/personal-os:brief` on one of their projects; run `/personal-os:shutdown` at the end of today.
 - One line: "Run `/personal-os:start tour` any time to see this explanation again."
+Then go to step 7.
+
+## 7. Your workshop path
+
+The cohort's workshop modules are plugins of their own. Each one has a setup command that coaches the user through it and picks up where they left off. They all go in **this folder**: one folder for every module, so the Campaign Engine reads the Marketing Brain's files and the Reporting agent's reviews land next to the daily logs.
+
+1. **Check what is installed.** For each module, check whether its setup command is available in this session (it is listed among your commands or skills), and read its progress from this folder (at mapped names when `.claude/folders.json` exists):
+
+   | Order | Module | Setup command | Progress in this folder |
+   |---|---|---|---|
+   | 1 | Marketing Brain | `/marketing-brain:setup` | `wiki/brand/icp.md`, `positioning-messaging.md`, `voice-guide.md`: `status` other than `template` means done. Example runs: `drafts/example-brain/` |
+   | 2 | Campaign Engine | `/campaign-engine:setup` | `projects/campaigns/*/brief.md`: `status: approved` or later means a brief is done |
+   | 3 | Reporting agent | `/reporting-agent:setup` | `projects/reporting-agent/reporting-agent.md`: its Progress list |
+
+   Show one table: module · installed · progress (not started, in progress, done for the workshop) · next step.
+2. **A module that is not installed:** give its repository URL and how to add it, in four short lines:
+   - Marketing Brain: `https://github.com/conversionxl/cxl-marketing-brain`. Campaign Engine: `https://github.com/conversionxl/cxl-campaign-engine`. Reporting agent: `https://github.com/conversionxl/cxl-reporting-agent`.
+   - In the Claude app or on claude.ai: **Customize › Plugins › + Add › Add from a repository**, paste the URL, click **Sync**, then click **Add**. Easy to miss: after Sync, the plugin is not active until you click Add.
+   - A plugin added in the Claude app reaches VS Code through your Claude account, which can take a few minutes. Still missing? Fully quit and reopen VS Code, then start a new chat in this folder.
+   - Never download or clone the repositories: a downloaded copy is not the plugin, and its commands don't show up from it.
+3. **Recommend the next step:** the first module in order that is installed and not done. If this session ran setup, say: "Close this session, start a new one in this folder (that also switches on your daily logs), and type `<setup command>`." Otherwise offer to start it now, on a yes, by following that command. A module is never required before the next one: the Campaign Engine works without a brand brain, it just asks more questions.
+4. One line: "Run `/personal-os:start tour` any time to see this table again."
+
