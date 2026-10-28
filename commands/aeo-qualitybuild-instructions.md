@@ -29,6 +29,7 @@ The learner starts from **nothing**: no files, no code, no template. You build e
 9. Keep each message short enough to read without scrolling much.
 10. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (GA4, Search Console, n8n).
 11. **Reuse brand answers.** Brand name, spellings, domain, and property details are asked once, in the brand step, and saved to `ai-visibility/profile.json` (in the existing `ai-visibility` folder under `projects/`, or `projects/ai-visibility/`; names and paths only, never keys). If that file already exists from another build, show what it holds in one line and ask for "ok" or changes instead of asking again.
+12. **Your own folders.** If `.claude/folders.json` exists and maps `projects` (for example to `PROJECTS`), every `projects/...` path in this command is read and written at its mapped name, and so is every path in the command file you write for the learner. Never create a second `projects/` folder next to a mapped one.
 
 ## Opening message (send this first, then wait for their pacing answer)
 
@@ -110,7 +111,7 @@ These definitions are the same for every learner and every build, so a number me
    - Which awards, partners or integrations do we name?
    - What did we used to be called, or what do people confuse us with?
 
-   These twelve are your small test. To reach 50, add one row for each plan, product or program, key team member, milestone, support or security policy, and certification. Keep to one claim per row, so "founded by Jo Lee in 2019" becomes two rows: founder, and year. If you don't know what AI gets wrong, leave `known_wrong` empty. You can fill it in later.
+   These twelve are your small test. **Check for namesakes first:** search your company name in Google and in ChatGPT. If other companies share your name or a close one, make sure your website domain, headquarters location and year founded each have a row, and put the namesakes in `known_wrong` on your "What we do" row. AI uses those facts to tell you apart, and describing the wrong company is the most common reason a small test scores low. To reach 50, add one row for each plan, product or program, key team member, milestone, support or security policy, and certification. Keep to one claim per row, so "founded by Jo Lee in 2019" becomes two rows: founder, and year. If you don't know what AI gets wrong, leave `known_wrong` empty. You can fill it in later.
 5. Two example rows to copy the style from:
    - `F01`, `What we are`, `Acme is a payroll platform for small businesses in the UK.`, `An accounting firm; a US-only tool`
    - `F02`, `Founder`, `Acme was founded by Jo Lee in 2019.`, `Any other founder`
@@ -220,9 +221,14 @@ Spec for the file (build exactly this, nothing more):
 - **Certificates on a Mac:** Python from python.org has no trusted certificates until "Install Certificates.command" is run, and learners often skip it, which fails the connections to the AI tools with `CERTIFICATE_VERIFY_FAILED`. Build every HTTPS call with an `ssl` context that falls back to the system bundle `/etc/ssl/cert.pem` when the default context has no certificates. Standard library only, nothing to install.
 - Commands: `run --ids <comma list, key, or all> --out <dir>`, `judge --run <dir>`, `report --run <dir>`. `--ids key` runs the questions marked `key=yes` in `probes.csv`. Every command accepts `--mock`, which uses canned answers and verdicts and makes no API calls, so the self-test is free.
 - Reads `config.json`, `facts.csv`, `probes.csv` from its own folder. `facts.csv` has the columns `id`, `fact`, `correct_answer`, `known_wrong`; `probes.csv` has `id`, `fact_id`, `type`, `key`, `probe`. Use these exact names everywhere (the judge prompt, the report headings, the report's per-fact lists). Do not accept or invent others. Reads keys from environment variables only. Skips any provider whose key is missing and says so.
-- `run`: sends only the question text to each AI tool, never the fact, the correct answer, a known wrong version or any hint, so the answers are collected independently and only compared with the fact sheet afterwards. It sends each question once to each available provider through its official API with web search on where the API supports it. Provider APIs change often (Perplexity, for one, has moved its endpoint), so never write model names or endpoints from memory. Before writing the code, fetch each provider's current API docs (the OpenAI Responses API, the Gemini `generateContent` API, the Perplexity API, and the Anthropic Messages API) and take the model name, endpoint, and web search option from them. Put the model names in `config.json` so the learner can change them. Retries on 429 with a pause. Saves one line per answer in `answers.jsonl` (provider, question id, answer text, cited URLs when the API returns them). Prints one line per provider such as "ChatGPT: ok 15, errors 0".
-- `judge`: sends each answer plus its fact (correct answer and known wrong) to Claude. Claude lists each claim about the brand as correct, wrong, or unsupported, then gives one verdict: `right`, `partly right`, `wrong`, or `missing` (brand not mentioned or confused with something that shares the name). Saves `verdicts.jsonl`.
-- `report`: writes `report.md` and `report.html` with, in order: the short version (counts per verdict, the biggest problem), the key questions by tool, what to fix (each wrong answer, the truth, and the cited pages, flagging pages on the learner's own domain as quick wins), what is incomplete, and where the AI did not know the brand. Compute every number exactly as defined in Standard calculations (accuracy is right ÷ answered, missing is counted separately).
+- **Check credits before spending them.** Before `run` and before `judge`, send one tiny request to each provider it will use. If a provider answers with a no-credit or billing error (for example Anthropic's "credit balance is too low", OpenAI's `insufficient_quota`, or a 402), stop before the batch and say which account needs credits, instead of failing halfway. If credits run out mid-batch, stop on the first no-credit error, keep everything already saved, and say how to resume.
+- **Resume, never redo.** Re-running `run` on the same output folder skips answers already saved. Re-running `judge` skips answers that already have a verdict. Say how many were skipped.
+- `run`: sends only the question text to each AI tool, never the fact, the correct answer, a known wrong version or any hint, so the answers are collected independently and only compared with the fact sheet afterwards. It sends each question once to each available provider through its official API with web search on where the API supports it. Provider APIs change often (Perplexity, for one, has moved its endpoint), so never write model names or endpoints from memory. Before writing the code, fetch each provider's current API docs (the OpenAI Responses API, the Gemini `generateContent` API, the Perplexity API, and the Anthropic Messages API) and take the model name, endpoint, and web search option from them. Put the model names in `config.json` so the learner can change them. Retries on 429 with a pause. Saves one line per answer in `answers.jsonl` (provider, question id, answer text, and every page URL the answer used: inline citations plus every page the tool's web search returned, for example Anthropic's `web_search_tool_result` blocks, not only the pages it quoted). Prints one line per provider such as "ChatGPT: ok 15, errors 0".
+- `judge`: sends each answer plus its fact (correct answer and known wrong) to Claude. Claude lists each claim about the brand as correct, wrong, or unsupported, then gives one verdict: `right`, `partly right`, `wrong`, or `missing` (brand not mentioned or confused with something that shares the name). For each wrong claim it also gives one to three short search terms that would appear on a page making that claim (an old name, a wrong number, a retired plan name). **List facts** (customers, partners, integrations, awards, where the correct answer is a list): an item that is not on the list is `unsupported`, not wrong, unless it is in `known_wrong` or the fact says the list is complete. Naming unsupported items alone makes the verdict at most `partly right`, never `wrong`. Saves `verdicts.jsonl`.
+- `report`: writes `report.md` and `report.html` with, in order: the short version (counts per verdict, the biggest problem), the key questions by tool, what to fix, what is incomplete, where the AI did not know the brand, and **Next: fix the sources**. Compute every number exactly as defined in Standard calculations (accuracy is right ÷ answered, missing is counted separately).
+  - **What to fix**, for each wrong answer: what it said wrong, the truth, the wrong claims, then the pages. Fetch every page on the learner's own domain that the answer used (cache each fetch in `runs/<folder>/pages/` so a page is fetched once per run) and search its text for the wrong claim's search terms. List **every page** the answer used, in three groups: "Your pages that contain the wrong claim" (each with the term found), "Your other pages it used", and "Other sites it used". If a page can't be fetched, list it with "could not check". Pages on other sites are listed, not fetched.
+  - **Unsupported items** from list facts go under "To verify", with the fact they belong to, never under "What to fix".
+  - **Next: fix the sources** is the last section. Look for `canonical/canonical-description.md` in the project's `ai-visibility` folder. If it is missing or its status is not `approved`, end the report with: "Wrong answers usually trace back to how your own site and profiles describe you. Set one canonical description and roll it out: run `aeo-canonical-instructions` (type `/` and pick it from the list)." If it is approved, end with: "Run `/canonical-check` to find pages and profiles that drifted from your canonical description."
 - Never prints or saves a key. No em dashes in any output text.
 
 ## Step 9: Run a small test
@@ -240,15 +246,15 @@ Spec for the file (build exactly this, nothing more):
 
 **When you're ready for the full build:** once your fact sheet has 50 facts, say so. I create the 100 questions (Step 7) and run `python3 brand_accuracy.py run --ids all --out runs/<today>-full`, then `judge` and `report` on that folder. With four tools that is about 400 answers, roughly 8 times the small test in size and cost.
 
-**Could go wrong:** "401" means a key is wrong. "429" means too many requests, and the tool retries on its own. Empty answers usually mean the provider changed its format; tell me and I'll fix the code.
+**Could go wrong:** "401" means a key is wrong. "429" means too many requests, and the tool retries on its own. A no-credit message means that account's balance is empty: add credits and say go, and the run picks up where it stopped. Empty answers usually mean the provider changed its format; tell me and I'll fix the code.
 
 ## Step 10: Read the report together
 
 **What this step does:** turns the report into a to-do list.
 
-**What you do:** I open `report.html` in your browser for you (and give you the file path). Then I walk you through it in order: the short version, your key questions, what to fix, what is incomplete, and where AI did not know you. We spot-check one "wrong" verdict by reading the full answer in `answers.jsonl`, because the judge is an AI and can be strict on borderline wording. If a "wrong" answer is actually right, the fact sheet needs fixing, not the website.
+**What you do:** I open `report.html` in your browser for you (and give you the file path). Then I walk you through it in order: the short version, your key questions, what to fix, what is incomplete, and where AI did not know you. We spot-check one "wrong" verdict by reading the full answer in `answers.jsonl`, because the judge is an AI and can be strict on borderline wording. If a "wrong" answer is right after all, the fact sheet needs fixing, not the website. Then we read "Your pages that contain the wrong claim" first: those are the fastest fixes. Last, the report's "Next: fix the sources" line: if you have no canonical description yet, that is the next command to run.
 
-**What you should see:** a short list of the two or three fixes that matter most, starting with pages on your own site.
+**What you should see:** a short list of the two or three fixes that matter most, starting with your pages that contain a wrong claim.
 
 **Tell me when:** "got it".
 
@@ -277,14 +283,15 @@ argument-hint: "[test | full] (default: test)"
 
 # /answer-quality
 
-Run from the project folder `projects/ai-visibility/brand-accuracy/`. `test` (the default) runs the questions marked `key=yes` in `probes.csv`. `full` runs every question.
+Run from the project folder `projects/ai-visibility/brand-accuracy/`. If `.claude/folders.json` maps `projects` to another name, use that folder instead. `test` (the default) runs the questions marked `key=yes` in `probes.csv`. `full` runs every question.
 
 1. **Check the files.** `config.json`, `facts.csv`, `probes.csv` and `brand_accuracy.py` must be in that folder. If one is missing, say which one and how to fix it.
 2. **Size.** For `full`, tell the user how many answers it will make (questions times AI tools with a key) and wait for a yes before running. For `test`, just run.
 3. **Run.** Inside `zsh -lc '...'` so the API keys load, from that folder: `python3 brand_accuracy.py run --ids key --out runs/<today>-test` (use `--ids all` and `-full` for full), then `python3 brand_accuracy.py judge --run runs/<folder>`, then `python3 brand_accuracy.py report --run runs/<folder>`.
 4. **Open the report.** Run `open runs/<folder>/report.html`.
-5. **Explain it in plain words:** accuracy per AI tool, the biggest problem, each wrong answer with the correct fact and the pages the AI cited (pages on the user's own domain are the quick wins), what is incomplete, and where the AI did not know the brand.
-6. **Compare.** If an earlier run in `runs/` used the same mode, show the change in accuracy per tool in percentage points.
+5. **Explain it in plain words:** accuracy per AI tool, the biggest problem, each wrong answer with the correct fact, the user's own pages that contain the wrong claim (the quick wins), the other pages it used, what is incomplete, what is left to verify, and where the AI did not know the brand.
+6. **Compare.** If an earlier run in `runs/` used the same mode, show the change in accuracy per tool in percentage points. AI answers vary from run to run, so treat a change of a few points as noise.
+7. **Next.** End with the report's "Next: fix the sources" line: if there is no approved `canonical/canonical-description.md` in the `ai-visibility` folder, recommend running `aeo-canonical-instructions` (type `/` and pick it from the list); if there is, recommend `/canonical-check`.
 
 **Formulas (always use these).** Answered = right + partly right + wrong. Accuracy = right ÷ answered. Wrong rate = wrong ÷ answered. Incomplete rate = partly right ÷ answered. Missing rate = missing ÷ all judged answers. Failed or empty answers are left out of every rate and listed separately, never counted as wrong or missing. Overall figures add up the counts first, then divide. A change in a rate is in percentage points.
 
@@ -295,11 +302,13 @@ Run from the project folder `projects/ai-visibility/brand-accuracy/`. `test` (th
 
 **What this step does:** gets your result in front of the group.
 
-**What you do:** post your `report.md` in the **demo section of the community**, with one line on what surprised you.
+**What you do:**
+1. Before you post, I list in one line anything in the report you may not want public (customer or partner names you haven't published, internal numbers). You confirm what to share, or tell me what to leave out and I make a copy without it.
+2. Post your `report.md` (or the copy) in the **demo section of the community**, with one line on what surprised you. Sharing is optional.
 
-**What you should see:** nothing from me. This one is yours.
+**What you should see:** your confirmation, then nothing from me. The post is yours.
 
-Then tell them what comes next: the full check (more facts, plus indirect questions), re-running after any rename or price change, and the going-deep setup command, `aeo-goingdeep-instructions`, for Build 2 (type `/` and pick it from the list).
+Then tell them what comes next: **fix the sources with the canonical description** if they haven't set one (`aeo-canonical-instructions`, type `/` and pick it from the list), the full check (more facts, plus indirect questions), re-running after any rename or price change, and the going-deep setup command, `aeo-goingdeep-instructions`, for Build 2.
 
 ## API key guide (give these steps for each tool the learner chooses)
 

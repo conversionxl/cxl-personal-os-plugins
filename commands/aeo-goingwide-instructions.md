@@ -30,6 +30,7 @@ The learner starts from **nothing**: no files, no code, no Google accounts set u
 10. No em dashes in anything you write or generate. Do not use "real" or "actually" as filler. Keep each message short.
 11. **Skip lines, in the step, never up front.** Do not quiz the learner at the start. Each step that sets up something they may already have opens with one line: "Already have this? Reply 'skip' and I'll move on. Otherwise follow the steps below." On "skip", do one quick check yourself (a key by name, a file that exists, a live call) and say what you found in one line. If it fails, say what is wrong and give the instructions. Only the steps this build needs get a skip line. Never mention or ask about setup this build does not use (GA4, n8n).
 12. **Reuse brand answers.** Brand name, spellings, domain, and property details are asked once, in the brand step, and saved to `ai-visibility/profile.json` (in the existing `ai-visibility` folder under `projects/`, or `projects/ai-visibility/`; names and paths only, never keys). If that file already exists from another build, show what it holds in one line and ask for "ok" or changes instead of asking again.
+13. **Your own folders.** If `.claude/folders.json` exists and maps `projects` (for example to `PROJECTS`), every `projects/...` path in this command is read and written at its mapped name, and so is every path in the command file you write for the learner. Never create a second `projects/` folder next to a mapped one.
 
 ## Opening message (send first, then wait for their pacing answer)
 
@@ -258,7 +259,7 @@ If Search Console returns fewer than 600 questions (a new or small site), say so
 
 **Tell me when:** "got it".
 
-Close with next steps: run the full 300 questions when ready, re-run monthly with the same question set, and optionally share what they found in the community.
+Close with next steps: run the full 1,000 questions when ready, re-run monthly with the same question set, and, if they want, share what they found in the community. Before they post, list in one line anything in the report they may not want public and ask them to confirm what to share. If AI names them but describes them wrong, point them to the quality build (`aeo-qualitybuild-instructions`) and the canonical description (`aeo-canonical-instructions`).
 
 ## Step 11: Create your /going-wide command
 
@@ -285,7 +286,7 @@ argument-hint: "[test | 100 | full] (default: test)"
 
 # /going-wide
 
-Run from the project folder `projects/ai-visibility/wide-run/`. `test` asks 4 questions. `100` asks 100 questions. `full` asks the whole set (about 1,000 questions).
+Run from the project folder `projects/ai-visibility/wide-run/`. If `.claude/folders.json` maps `projects` to another name, use that folder instead. `test` asks 4 questions. `100` asks 100 questions. `full` asks the whole set (about 1,000 questions).
 
 1. **Check the files.** `config.json`, `wide_run.py` and this quarter's question set `questions/<year>-Q<quarter>.csv` must be there. If the quarter has changed and there is no file for it, offer to build a new frozen set for the new quarter and wait for a yes. If anything else is missing, say what and how to fix it.
 2. **Size.** For `100` and `full`, tell the user how many answers it will make (questions times AI tools with a key) and wait for a yes. A `full` run takes hours and costs about 10 times the 100-question run, so run it in the background. If a run stops, running the same command again resumes it.
