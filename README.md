@@ -79,7 +79,7 @@ New versions don't install themselves on a personal marketplace. To update: **Se
 | claude.ai chat | Skills only |
 | claude.ai/code in a browser, or the Code tab with Environment: Cloud | Nothing. Cloud sessions do not load plugins |
 
-**Windows:** the hooks are bash scripts. Install Git for Windows and jq once: `winget install Git.Git jqlang.jq`, then fully quit and reopen the Claude app. `/personal-os:start` checks both.
+**Windows:** the hooks are bash scripts. Install Git for Windows and jq once: `winget install Git.Git jqlang.jq`, then fully quit and reopen the Claude app. `/personal-os:setup` checks both.
 
 **Daily logs begin in your second session.** Setup switches them on, so close the setup session and start a new one in the folder.
 
@@ -87,8 +87,7 @@ New versions don't install themselves on a personal marketplace. To update: **Se
 
 | Command | What it does |
 |---|---|
-| `/personal-os:setup` | Builds the personal OS in the current folder and makes it a git repo. Never overwrites a file |
-| `/personal-os:start` | Checks setup, explains the system, fills in "About me", creates your first projects, then shows your workshop path: which modules (Marketing Brain, Campaign Engine, Reporting agent) are installed in this folder, how far you are, and the setup to run next |
+| `/personal-os:setup` | Builds the personal OS in the current folder and makes it a git repo (never overwrites a file), checks your setup, explains the system, fills in "About me", creates your first projects, then shows your workshop path: which modules (Marketing Brain, Campaign Engine, Reporting agent) are installed in this folder, how far you are, and the setup to run next. Run it again any time to re-check your setup and see your next step; `/personal-os:setup tour` repeats the explanation. (`/personal-os:start` still works and runs setup.) |
 | `/personal-os:brief` | Everything the folder knows about a person, project or topic |
 | `/personal-os:ingest` | Files what you dropped into `raw/` |
 | `/personal-os:shutdown` | End of day: reconciles, routes commitments, writes the daily log |

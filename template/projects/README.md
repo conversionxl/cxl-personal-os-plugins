@@ -1,6 +1,6 @@
 # projects/
 
-One folder per active project, holding one canonical project file with the same name: `projects/<name>/<name>.md`. Copy `_template.md` to start one, or let `/personal-os:start` create them for you.
+One folder per active project, holding one canonical project file with the same name: `projects/<name>/<name>.md`. Copy `_template.md` to start one, or let `/personal-os:setup` create them for you.
 
 The project file is the authority on its own scope, status, and next action. Supporting material (meeting notes, research, briefs) lives in the same folder.
 
