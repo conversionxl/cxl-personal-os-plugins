@@ -137,13 +137,11 @@ Then:
 - If Gmail, Google Calendar, or a project management connector is available in this session, offer to fill in the project files from what those tools show. Base every line on what the tools return, and say where it came from. If no connector is available, say so and skip.
 - Save one memory file for anything durable they said about how they work, and add it to `.claude/memory/MEMORY.md`. Write both with the shell (a heredoc), not the file-edit tools: in Cowork the file tools cannot write inside `.claude/`. If the shell is not ready yet, wait and retry. Never save memory anywhere else.
 
+**Do not stop here.** As soon as the About me section, the project files and the memory are written, carry straight on to steps 9 and 10 in the same reply. The setup is not finished until step 10 has handed over to the next module.
+
 ## 9. Wrap up
 
-End with:
-- What was set up (a short checklist: ✅ done, ⚠️ needs their action).
-- Their first three moves: drop something into `raw/` and run `/personal-os:ingest`; run `/personal-os:brief` on one of their projects; run `/personal-os:shutdown` at the end of today.
-- One line: "Run `/personal-os:setup tour` any time to see this explanation again."
-Then go to step 10.
+Show what was set up, as a short checklist (✅ done, ⚠️ needs their action), and one line for later: "Day to day: drop things into `raw/` and run `/personal-os:ingest`, `/personal-os:brief` before a meeting, `/personal-os:shutdown` at the end of the day." Then go straight to step 10.
 
 ## 10. Your workshop path
 
@@ -163,5 +161,15 @@ The cohort's workshop modules are plugins of their own. Each one has a setup com
    - In the Claude app or on claude.ai: **Customize › Plugins › + Add › Add from a repository**, paste the URL, click **Sync**, then click **Add**. Easy to miss: after Sync, the plugin is not active until you click Add.
    - A plugin added in the Claude app reaches VS Code through your Claude account, which can take a few minutes. Still missing? Fully quit and reopen VS Code, then start a new chat in this folder.
    - Never download or clone the repositories: a downloaded copy is not the plugin, and its commands don't show up from it.
-3. **Recommend the next step:** the first module in order that is installed and not done. If this was the first run, say: "Close this session, start a new one in this folder (that also switches on your daily logs), and type `<setup command>`." Otherwise offer to start it now, on a yes, by following that command. A module is never required before the next one: the Campaign Engine works without a brand brain, it just asks more questions.
-4. One line: "Type `/personal-os:setup` any time to see this table again."
+3. **Close out.** End every run with this, and nothing after it. The next module is the first one in order that is not done (Marketing Brain on a first run):
+
+   > **You're fully set up with the personal OS.** Your folders, memory and daily logs are ready, and Claude knows who you are and what you're working on.
+   >
+   > **Next: the Marketing Brain.**
+   > 1. Not added yet? In the Claude app or on claude.ai: **Customize › Plugins › + Add › Add from a repository**, paste `https://github.com/conversionxl/cxl-marketing-brain`, click **Sync**, then click **Add**.
+   > 2. Start a new session in this same folder.
+   > 3. Type `/marketing-brain:setup`.
+   >
+   > A new session also switches on your daily logs. Type `/personal-os:setup` any time to see where you are.
+
+   When the next module is the Campaign Engine or the Reporting agent, use the same block with its name, repository URL and setup command. All three done: say instead, **"You're set up for the workshops."** Never start the next module in this session: a new session is what loads a newly added plugin and switches on the daily logs.
