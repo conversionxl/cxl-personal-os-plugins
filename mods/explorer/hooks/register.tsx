@@ -576,8 +576,8 @@ export const register: Register = on => {
     const stripe = (path: string) => {
       if (!isMap) return null
       const owner = territoryOf(path)
-      if (owner === null) return <Text>{'  '}</Text>
-      const line = <Text color={colorOf(owner)} weight="bold">{'▏ '}</Text>
+      if (owner === null) return <Text mono>{'  '}</Text>
+      const line = <Text mono color={colorOf(owner)} weight="bold">{'▏ '}</Text>
       // Only a folder the plugin set up (or a file it made) answers hover, and
       // only while the pane's hover allowance lasts: the desktop app stops
       // drawing a pane that holds too many hover elements.
@@ -721,10 +721,9 @@ export const register: Register = on => {
                   <Box flexShrink={1}>
                     {stripe(row.path)}
                     <Button key={`b-${row.path}`} plain onPress={() => toggle($, row.path)}>
-                      <Text dimColor>{row.guide}</Text>
-                      <Text dimColor>{row.isOpen ? '▾ ' : '▸ '}</Text>
+                      <Text mono dimColor>{`${row.guide}${row.isOpen ? '▾ ' : '▸ '}`}</Text>
                       {row.isOpen ? '📂 ' : '📁 '}
-                      <Text color={color} weight="semibold" {...liveName(live.get(row.path) ?? null)}>
+                      <Text wrap="truncate-end" color={color} weight="semibold" {...liveName(live.get(row.path) ?? null)}>
                         {row.name}/
                       </Text>
                     </Button>
@@ -740,13 +739,13 @@ export const register: Register = on => {
               <Box key={`f-${row.path}`} justifyContent="space-between">
                 <Box flexShrink={1}>
                   {stripe(row.path)}
-                  <Text dimColor>{row.guide}  </Text>
+                  <Text mono dimColor>{`${row.guide}  `}</Text>
                   <Text size="caption" mono color="#E6E6E6" backgroundColor="#4A4E57">
                     {badge(row.name)}
                   </Text>
                   <Button key={`o-${row.path}`} plain onPress={() => openFile($, row.path)}>
                     <Text color={color}> </Text>
-                    <Text color={color} {...liveName(liveOf(row.path, false))}>
+                    <Text wrap="truncate-end" color={color} {...liveName(liveOf(row.path, false))}>
                       {` ${row.name} `}
                     </Text>
                   </Button>
