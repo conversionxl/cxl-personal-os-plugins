@@ -31,7 +31,7 @@ const changes = atom({ plugin: 'explorer', key: 'changes' } as const, [], { shap
 const tick = atom({ plugin: 'explorer', key: 'tick' } as const, 0)
 const active = atom({ plugin: 'explorer', key: 'active' } as const, null)
 const showMap = atom({ plugin: 'explorer', key: 'showMap' } as const, true)
-const legendOpen = atom({ plugin: 'explorer', key: 'legendOpen' } as const, true)
+const legendOpen = atom({ plugin: 'explorer', key: 'legendOpen' } as const, false)
 
 type Entry = { name: string; kind: 'file' | 'dir' | 'other' }
 type Row = { path: string; name: string; isDir: boolean; isOpen: boolean; guide: string }
