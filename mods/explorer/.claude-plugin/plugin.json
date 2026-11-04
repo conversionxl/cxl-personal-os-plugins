@@ -1,6 +1,6 @@
 {
   "name": "explorer",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "description": "A VS Code style Explorer pane beside the chat: the project's files and folders, git status letters, and which CXL plugin owns or created each folder and file",
   "types": "./types/index.d.ts",
   "author": {
