@@ -123,6 +123,10 @@ Each workshop has its own plugin in its own marketplace. Add each one from **Set
 | **marketing-brain** | `https://github.com/conversionxl/cxl-marketing-brain` | `/marketing-brain:setup` | The brand brain: ICP, positioning and messaging, brand voice. [Details](https://github.com/conversionxl/cxl-marketing-brain#plugin-route) |
 | **campaign-engine** | `https://github.com/conversionxl/cxl-campaign-engine` | `/campaign-engine:setup` | Briefs, channel workflows, drafts and a quality gate. [Details](https://github.com/conversionxl/cxl-campaign-engine#plugin-route) |
 
+## Explorer pane
+
+**explorer** is a second plugin in this marketplace: a file tree beside the chat that shows your folders, git status, and which plugin set up or created each folder and file. Once you've added this marketplace, add **Explorer** too, then type `/explorer`. It draws in the desktop app's Code tab and the terminal, not in Cowork or chat. [Details](mods/explorer/README.md)
+
 ## Other AI tools
 
 Setup also writes an `AGENTS.md`. Codex, GitHub Copilot, Cursor and Grok read it, and it points them at `CLAUDE.md` and tells them where the routines are. In Gemini CLI, add `"context": {"fileName": ["AGENTS.md", "GEMINI.md"]}` to `.gemini/settings.json`. Those tools don't run the hooks, so daily logs are by hand there: ask for the shutdown routine at the end of the day. Already set up? Run `/personal-os:setup` again. It adds new files and never overwrites yours.

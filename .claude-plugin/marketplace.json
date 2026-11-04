@@ -1,7 +1,7 @@
 {
   "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
   "name": "cxl-personal-os-plugins",
-  "description": "CXL's personal OS plugin for the AI Native Marketer cohort.",
+  "description": "CXL's personal OS plugin for the AI Native Marketer cohort, and the Explorer pane.",
   "owner": {
     "name": "CXL",
     "email": "hesh@cxl.com"
@@ -11,6 +11,12 @@
       "name": "personal-os",
       "description": "Project folders, automatic daily logs, travelling memory, and the personal OS commands.",
       "source": "./",
+      "category": "productivity"
+    },
+    {
+      "name": "explorer",
+      "description": "A file tree beside the chat: your folders and files, git status letters, and which CXL plugin set up or created each one.",
+      "source": "./mods/explorer",
       "category": "productivity"
     }
   ]
