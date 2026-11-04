@@ -50,3 +50,30 @@ test('the pane draws the tree', async ($, on) => {
     await ui.unmount()
   }
 })
+
+test('the pane follows the session when the app moves it out of a spare folder', async ($, on) => {
+  let where = '/spare'
+  on('command.register', (_, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => ({ value: { isPlaced: true } }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.root', () => ({ value: where }))
+  on('fs.list', (_, e) => ({
+    value:
+      e.path === '/vault'
+        ? [{ name: 'CLAUDE.md', kind: 'file', size: 1, mtimeMs: 1, isLink: false }]
+        : [],
+  }))
+  on('fs.read', () => ({ deny: 'missing' }))
+  on('fs.stat', () => ({ deny: 'missing' }))
+  on('fs.exists', () => ({ value: false }))
+  on('fs.write', () => ({ value: undefined }))
+  on('process.run', () => ({ value: { exitCode: 1, stdout: '', stderr: '', isStdoutTruncated: false } }))
+  on('clock.every', () => ({ value: undefined }))
+
+  await $.session.start({ cwd: '/spare', surface: 'desktop', isInteractive: true })
+  where = '/vault'
+  const ui = await $.ui.mount({ ...PANE, surface: 'desktop' })
+  expect((await ui.find({ type: 'Text', text: /CLAUDE/ }))?.text).toContain('CLAUDE.md')
+  expect(await ui.find({ type: 'Text', text: /SPARE|spare/ })).toBeUndefined()
+  await ui.unmount()
+})

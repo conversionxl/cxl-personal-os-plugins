@@ -279,8 +279,31 @@ async function bump($: Engine) {
   await update($, tick, n => (n + 1) % 1_000_000)
 }
 
+async function registerCommands($: Engine) {
+  await $.command.register({
+    name: 'explorer',
+    description: 'Show the Explorer pane: the files and folders in this project',
+  }).catch(() => undefined)
+  await $.command.register({
+    name: 'plugin-map',
+    description: 'Switch plugin colours on or off in the Explorer',
+  }).catch(() => undefined)
+}
+
+// The desktop app starts sessions ahead of time in a spare folder and moves
+// them to the chosen project when you open one, so the folder is read fresh
+// every time rather than kept from the start.
+async function syncRoot($: Engine) {
+  const now = await $.session.root()
+  if (now === root) return
+  root = now
+  await loadFolders($)
+  await loadAttributions($)
+  await refreshGit($)
+}
+
 async function refresh($: Engine) {
-  if (root === '') root = await $.session.root()
+  await syncRoot($)
   await refreshGit($)
   await bump($)
 }
@@ -400,21 +423,19 @@ async function record($: Engine, path: string | undefined, existed: boolean | nu
 
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
-    root = await $.session.root()
-    await $.command.register({
-      name: 'explorer',
-      description: 'Show the Explorer pane: the files and folders in this project',
-    })
-    await $.command.register({
-      name: 'plugin-map',
-      description: 'Switch plugin colours on or off in the Explorer',
-    })
-    await loadFolders($)
-    await loadAttributions($)
-    await refreshGit($)
+    await registerCommands($)
+    await syncRoot($)
     void $.ui.open({ id: PANE, title: TITLE })
     $.clock.every(REFRESH_MS, () => refresh($))
     return next(e)
+  })
+
+  on('session.attach', async ($, e, next) => {
+    const ran = await next(e)
+    await registerCommands($)
+    await syncRoot($)
+    await bump($)
+    return ran
   })
 
   on('command.run', { command: 'explorer' }, async ($, e) => {
@@ -487,7 +508,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text, Button } = $.ui.resolve(e)
     await read($, tick)
-    if (root === '') root = await $.session.root()
+    await syncRoot($)
     const isMap = await read($, showMap)
     const isLegend = await read($, legendOpen)
     const running = isMap ? await read($, active) : null
