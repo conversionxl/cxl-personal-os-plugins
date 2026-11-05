@@ -46,6 +46,42 @@ let activeVia: string | undefined
 let folders: Record<string, string> = {}
 let isPlain = false
 
+// The /mods switchboard: `"explorer": false` in ~/.claude/mods/switches.json
+// turns Explorer off in every chat. Off closes the pane, stops the tracking
+// and keeps /explorer from opening it. Read again on every refresh.
+const NAME = 'explorer'
+let isOff = false
+let home = ''
+
+async function homeOf($: Engine) {
+  if (home) return home
+  const cut = $.plugin.root.split('/.claude/')
+  if (cut.length > 1 && cut[0]) home = cut[0]
+  else home = (await Promise.resolve($.env.get('HOME')).catch(() => undefined)) ?? ''
+  return home
+}
+
+async function readSwitch($: Engine) {
+  let nowOff = isOff
+  try {
+    const path = `${await homeOf($)}/.claude/mods/switches.json`
+    if (await $.fs.exists(path)) {
+      const json: unknown = JSON.parse(String(await $.fs.read(path)))
+      nowOff = json !== null && typeof json === 'object' && (json as Record<string, unknown>)[NAME] === false
+    } else nowOff = false
+  } catch {
+    // A missing or broken file changes nothing.
+  }
+  if (nowOff === isOff) return
+  isOff = nowOff
+  if (isOff) {
+    live.clear()
+    await Promise.resolve($.ui.close({ id: PANE })).catch(() => undefined)
+  }
+}
+
+const OFF_TEXT = 'Explorer is off in every chat. Turn it on in /mods.'
+
 
 // Live activity: what Claude is writing right now, and what it just finished.
 type Live = { kind: 'creating' | 'editing' | 'created' | 'edited'; since: number }
@@ -303,6 +339,8 @@ async function syncRoot($: Engine) {
 }
 
 async function refresh($: Engine) {
+  await readSwitch($)
+  if (isOff) return
   await syncRoot($)
   await refreshGit($)
   await bump($)
@@ -380,6 +418,7 @@ async function animate($: Engine) {
 }
 
 async function startLive($: Engine, path: string | undefined, isNew: boolean) {
+  if (isOff) return
   const r = rel(path)
   if (r === null || r === '') return
   live.set(r, { kind: isNew ? 'creating' : 'editing', since: await $.clock.now() })
@@ -399,6 +438,7 @@ async function finishLive($: Engine, path: string | undefined) {
 }
 
 async function record($: Engine, path: string | undefined, existed: boolean | null) {
+  if (isOff) return
   const r = rel(path)
   if (r === null || r === '') return
   const now = await $.clock.now()
@@ -424,9 +464,11 @@ async function record($: Engine, path: string | undefined, existed: boolean | nu
 export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     await registerCommands($)
+    await readSwitch($)
+    $.clock.every(REFRESH_MS, () => refresh($))
+    if (isOff) return next(e)
     await syncRoot($)
     void $.ui.open({ id: PANE, title: TITLE })
-    $.clock.every(REFRESH_MS, () => refresh($))
     return next(e)
   })
 
@@ -439,6 +481,8 @@ export const register: Register = on => {
   })
 
   on('command.run', { command: 'explorer' }, async ($, e) => {
+    await readSwitch($)
+    if (isOff) return { text: OFF_TEXT }
     isPlain = e.args.trim() === 'plain'
     await bump($)
     await $.ui.open({ id: PANE, title: TITLE })
@@ -446,6 +490,8 @@ export const register: Register = on => {
   })
 
   on('command.run', { command: 'plugin-map' }, async $ => {
+    await readSwitch($)
+    if (isOff) return { text: OFF_TEXT }
     await toggleMap($)
     await $.ui.open({ id: PANE, title: TITLE })
     const isOn = await read($, showMap)
@@ -508,6 +554,7 @@ export const register: Register = on => {
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
     const { Box, Text, Button } = $.ui.resolve(e)
     await read($, tick)
+    if (isOff) return <Text dimColor>{OFF_TEXT}</Text>
     await syncRoot($)
     const isMap = await read($, showMap)
     const isLegend = await read($, legendOpen)

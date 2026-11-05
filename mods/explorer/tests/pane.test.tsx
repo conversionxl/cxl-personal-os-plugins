@@ -77,3 +77,35 @@ test('the pane follows the session when the app moves it out of a spare folder',
   expect(await ui.find({ type: 'Text', text: /SPARE|spare/ })).toBeUndefined()
   await ui.unmount()
 })
+
+test('off in the /mods switchboard: no pane, /explorer says so, and on again works', async ($, on) => {
+  let switches = JSON.stringify({ explorer: false })
+  const isSwitches = (e: unknown) => (e as { path: string }).path.endsWith('/.claude/mods/switches.json')
+  let opened = 0
+  on('command.register', (_, e) => ({ value: { command: e.name } }))
+  on('ui.open', () => {
+    opened += 1
+    return { value: { isPlaced: true } }
+  })
+  on('ui.close', () => ({ value: undefined }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('session.root', () => ({ value: '/v' }))
+  on('fs.list', () => ({ value: [{ name: 'CLAUDE.md', kind: 'file', size: 1, mtimeMs: 1, isLink: false }] }))
+  on('fs.read', (_, e) => (isSwitches(e) ? { value: switches } : { deny: 'missing' }))
+  on('fs.stat', () => ({ deny: 'missing' }))
+  on('fs.exists', (_, e) => ({ value: isSwitches(e) }))
+  on('fs.write', () => ({ value: undefined }))
+  on('process.run', () => ({ value: { exitCode: 0, stdout: '', stderr: '', isStdoutTruncated: false } }))
+  on('clock.every', () => ({ value: undefined }))
+
+  await $.session.start({ cwd: '/v', surface: 'desktop', isInteractive: true })
+  expect(opened).toBe(0)
+  const said = (await $.command.run({ command: 'explorer', args: '' } as never)) as { text?: string }
+  expect(said.text).toContain('/mods')
+  expect(opened).toBe(0)
+
+  switches = '{}'
+  const back = (await $.command.run({ command: 'explorer', args: '' } as never)) as { text?: string }
+  expect(back.text).toContain('Explorer pane opened')
+  expect(opened).toBe(1)
+})
