@@ -16,6 +16,10 @@ It reads your own folder names from `.claude/folders.json`, so a rerouted person
 - `/explorer` opens the pane. `/explorer plain` opens a simpler text view.
 - `/plugin-map` switches the plugin colours on or off.
 
+## Turning it off
+
+Explorer follows the `/mods` switchboard if you have one installed. Off there writes `"explorer": false` to `~/.claude/mods/switches.json`, and Explorer then closes its pane, stops tracking edits and keeps `/explorer` from opening it, in every chat, within a few seconds. On again: run `/explorer`.
+
 ## Install
 
 In the desktop app's **Code** tab or a terminal session:
