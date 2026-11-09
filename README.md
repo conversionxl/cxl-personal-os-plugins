@@ -6,7 +6,7 @@ Already set up the starter repo? Keep it, and don't add the plugin to that folde
 
 ## This repository is the plugin, not your folder
 
-**Don't download, clone or open this repository as your working folder.** It holds the plugin's source code (`commands/`, `hooks/`, `template/`). Opened as a folder, nothing works: the commands don't appear, the hooks don't run, and no daily logs get written.
+**Don't download, clone or open this repository as your working folder.** It holds the plugins' source code (personal-os in `plugins/personal-os/`, Explorer in `mods/explorer/`). Opened as a folder, nothing works: the commands don't appear, the hooks don't run, and no daily logs get written.
 
 You install the plugin into Claude, and Claude keeps its own copy. Your working folder is a separate, empty folder of your own, where `/personal-os:setup` builds your personal OS.
 

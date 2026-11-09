@@ -10,7 +10,7 @@
     {
       "name": "personal-os",
       "description": "Project folders, automatic daily logs, travelling memory, and the personal OS commands.",
-      "source": "./",
+      "source": "./plugins/personal-os",
       "category": "productivity"
     },
     {
