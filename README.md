@@ -6,7 +6,7 @@ Already set up the starter repo? Keep it, and don't add the plugin to that folde
 
 ## This repository is the plugin, not your folder
 
-**Don't download, clone or open this repository as your working folder.** It holds the plugins' source code (personal-os in `plugins/personal-os/`, Explorer in `mods/explorer/`). Opened as a folder, nothing works: the commands don't appear, the hooks don't run, and no daily logs get written.
+**Don't download, clone or open this repository as your working folder.** It holds the plugin's source code (`commands/`, `hooks/`, `template/`). Opened as a folder, nothing works: the commands don't appear, the hooks don't run, and no daily logs get written.
 
 You install the plugin into Claude, and Claude keeps its own copy. Your working folder is a separate, empty folder of your own, where `/personal-os:setup` builds your personal OS.
 
@@ -42,18 +42,6 @@ The plugin is saved to your claude.ai account, not your computer. Claude syncs i
 ```
 
 This makes a second, local copy that lives on this computer only. Never use it as well as the Settings → Plugins route.
-
-### No "Add marketplace" option? Upload the ZIP
-
-Some accounts only show an upload option in **Settings → Plugins**. Use this ZIP, which holds personal-os only:
-
-**[Download personal-os.zip](https://github.com/conversionxl/cxl-personal-os-plugins/releases/download/plugin-zips/personal-os.zip)**
-
-Upload it in **Settings → Plugins** as it is: don't unzip it.
-
-**Don't use the green Code → Download ZIP button on this page.** That ZIP holds both plugins, so the upload fails with a message that there are two `plugin.json` files and there can be only one.
-
-An uploaded plugin doesn't update itself. For a new version, download the ZIP again, remove the old plugin in **Settings → Plugins**, and upload the new one. If you later get the marketplace option, remove the uploaded plugin first, so you keep one copy.
 
 ## Troubleshooting: a local copy and a synced copy
 
@@ -134,10 +122,6 @@ Each workshop has its own plugin in its own marketplace. Add each one from **Set
 |---|---|---|---|
 | **marketing-brain** | `https://github.com/conversionxl/cxl-marketing-brain` | `/marketing-brain:setup` | The brand brain: ICP, positioning and messaging, brand voice. [Details](https://github.com/conversionxl/cxl-marketing-brain#plugin-route) |
 | **campaign-engine** | `https://github.com/conversionxl/cxl-campaign-engine` | `/campaign-engine:setup` | Briefs, channel workflows, drafts and a quality gate. [Details](https://github.com/conversionxl/cxl-campaign-engine#plugin-route) |
-
-## Explorer pane
-
-**explorer** is a second plugin in this marketplace: a file tree beside the chat that shows your folders, git status, and which plugin set up or created each folder and file. Once you've added this marketplace, add **Explorer** too, then type `/explorer`. It draws in the desktop app's Code tab and the terminal, not in Cowork or chat. [Details](mods/explorer/README.md)
 
 ## Other AI tools
 
