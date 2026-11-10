@@ -17,7 +17,7 @@ In Claude Code, hooks load the two newest daily logs at the start of a session a
 
 The routines come from the Claude plugin, so their files are not in this folder: `start`, `brief`, `ingest`, `shutdown`, `lint` and `team-update`. When the user names one ("run shutdown", "brief me on the Q4 launch"), fetch it from
 
-`https://raw.githubusercontent.com/conversionxl/cxl-personal-os-plugins/main/plugins/personal-os/commands/<name>.md`
+`https://raw.githubusercontent.com/conversionxl/cxl-personal-os-plugins/main/commands/<name>.md`
 
 and follow it step by step. Treat `$ARGUMENTS` as whatever the user added after the name, and skip anything that only applies inside Claude (the `/personal-os:` prefix, the plugin root). If you cannot fetch it, say so and ask the user to paste the file.
 
