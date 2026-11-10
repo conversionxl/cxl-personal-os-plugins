@@ -43,6 +43,18 @@ The plugin is saved to your claude.ai account, not your computer. Claude syncs i
 
 This makes a second, local copy that lives on this computer only. Never use it as well as the Settings → Plugins route.
 
+### No "Add marketplace" option? Upload the ZIP
+
+Some accounts only show an upload option in **Settings → Plugins**. Use this ZIP, which holds personal-os only:
+
+**[Download personal-os.zip](https://github.com/conversionxl/cxl-personal-os-plugins/releases/download/plugin-zips/personal-os.zip)**
+
+Upload it in **Settings → Plugins** as it is: don't unzip it.
+
+**Don't use the green Code → Download ZIP button on this page.** That ZIP holds both plugins, so the upload fails with a message that there are two `plugin.json` files and there can be only one.
+
+An uploaded plugin doesn't update itself. For a new version, download the ZIP again, remove the old plugin in **Settings → Plugins**, and upload the new one. If you later get the marketplace option, remove the uploaded plugin first, so you keep one copy.
+
 ## Troubleshooting: a local copy and a synced copy
 
 A plugin reaches Claude Code in one of two ways:
