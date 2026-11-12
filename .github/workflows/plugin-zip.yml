@@ -1,0 +1,40 @@
+name: Plugin ZIP
+
+# Publishes personal-os.zip to the "plugin-zips" release, for people who can't
+# add the marketplace and upload the plugin in Settings -> Plugins instead.
+# Stable link:
+#   https://github.com/conversionxl/cxl-personal-os-plugins/releases/download/plugin-zips/personal-os.zip
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build ZIP
+        run: bash scripts/build-zip.sh
+
+      - name: Publish to the plugin-zips release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ver=$(jq -r .version .claude-plugin/plugin.json)
+          notes="Upload personal-os.zip in Settings -> Plugins if you can't add the marketplace. Don't unzip it.
+
+          personal-os $ver, built from ${GITHUB_SHA::7}. Don't use the repository's green Code -> Download ZIP button: it wraps the plugin in a folder and fails the upload check."
+          if ! gh release view plugin-zips >/dev/null 2>&1; then
+            gh release create plugin-zips --title "Plugin ZIP" --notes "$notes" --target "$GITHUB_SHA"
+          else
+            gh release edit plugin-zips --title "Plugin ZIP" --notes "$notes"
+          fi
+          gh release upload plugin-zips dist/personal-os.zip --clobber
+          # Drop the retired explorer.zip if an older run left it there.
+          gh release delete-asset plugin-zips explorer.zip -y 2>/dev/null || true

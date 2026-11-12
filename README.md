@@ -25,6 +25,8 @@ Install it **one way only**: from **Settings → Plugins** in Claude. Installed 
 1. Open Claude: claude.ai or the desktop app ([claude.ai/download](https://claude.ai/download)).
 2. Open **Settings → Plugins**, click **Add → Add marketplace**, and choose the GitHub repo option.
 3. Enter `conversionxl/cxl-personal-os-plugins`, then add **Personal os**. It then shows under **From marketplaces you added**.
+
+   **No "Add marketplace" under Add, only "Upload plugin" and "Create with Claude"?** You're in the desktop app's **Code** mode. Switch to **Chat** mode (top left), then open **Settings → Plugins → Add** again. Add marketplace shows there. The plugin still syncs to the Code tab afterwards.
 4. Make an empty folder, such as `Documents/personal-os`. Open it in either:
    - the desktop app's **Code** tab, with **Environment** set to **Local** and the folder picked as **Project folder** (set to Cloud, it only offers repositories), or
    - **Cowork**. Commands work there, but daily logs are not automatic (see below).
@@ -42,6 +44,14 @@ The plugin is saved to your claude.ai account, not your computer. Claude syncs i
 ```
 
 This makes a second, local copy that lives on this computer only. Never use it as well as the Settings → Plugins route.
+
+### Still no "Add marketplace"? Upload the ZIP
+
+**[Download personal-os.zip](https://github.com/conversionxl/cxl-personal-os-plugins/releases/download/plugin-zips/personal-os.zip)** and upload it in **Settings → Plugins → Add → Upload plugin** as it is: don't unzip it.
+
+**Don't use the green Code → Download ZIP button on this page.** That ZIP puts everything inside a `cxl-personal-os-plugins-main` folder, so the upload can't find the plugin and fails with "The archive must contain a .claude-plugin/plugin.json manifest".
+
+An uploaded plugin doesn't update itself. For a new version, download the ZIP again, remove the old plugin in **Settings → Plugins**, and upload the new one. If you later get the marketplace option, remove the uploaded plugin first, so you keep one copy.
 
 ## Troubleshooting: a local copy and a synced copy
 
