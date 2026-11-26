@@ -1,6 +1,6 @@
 # Personal OS plugin
 
-The plug-and-play route to the personal OS from the CXL AI Native Marketer cohort. It builds the same system as the [starter repo](https://github.com/conversionxl/cxl-personal-os): project folders, daily logs written automatically, memory that travels with your folder, and the personal OS commands. You don't need VS Code, and you don't need to clone a repo.
+The personal OS from the CXL AI Native Marketer cohort, as a plugin. **Installing the plugin is the recommended way to get it.** It builds project folders, daily logs written automatically, memory that travels with your folder, and the personal OS commands. You don't need VS Code, and you don't need to clone a repo.
 
 Already set up the starter repo? Keep it, and don't add the plugin to that folder. Both routes are the same system: one folder uses one of them.
 
@@ -14,11 +14,11 @@ You install the plugin into Claude, and Claude keeps its own copy. Your working 
 |---|---|---|
 | What it is | The commands, hooks and skills | Your projects, logs, memory and `CLAUDE.md` |
 | Where it lives | In Claude, installed from **Settings → Plugins** | Anywhere on your computer, such as `Documents/personal-os` |
-| How you get it | Install it (below). Never download it | Make an empty folder and run `/personal-os:setup` in it |
+| How you get it | Install it (below). Download it only to customize it (the advanced route, further down) | Make an empty folder and run `/personal-os:setup` in it |
 
-Want the repository route instead, with your own git copy to open in VS Code? That's the [starter repo](https://github.com/conversionxl/cxl-personal-os), not this one.
+Want to change how the system works and repurpose it for yourself? That is the advanced route: see [Download and customize](#download-and-customize-advanced).
 
-## Install
+## Install the plugin (recommended)
 
 Install it **one way only**: from **Settings → Plugins** in Claude. Installed twice, every hook runs twice.
 
@@ -130,13 +130,19 @@ Each workshop has its own plugin in its own marketplace. Add each one from **Set
 
 | Plugin | Add this marketplace | Setup | Adds |
 |---|---|---|---|
-| **marketing-brain** | `https://github.com/conversionxl/cxl-marketing-brain` | `/marketing-brain:setup` | The brand brain: ICP, positioning and messaging, brand voice. [Details](https://github.com/conversionxl/cxl-marketing-brain#plugin-route) |
-| **campaign-engine** | `https://github.com/conversionxl/cxl-campaign-engine` | `/campaign-engine:setup` | Briefs, channel workflows, drafts and a quality gate. [Details](https://github.com/conversionxl/cxl-campaign-engine#plugin-route) |
+| **marketing-brain** | `https://github.com/conversionxl/cxl-marketing-brain` | `/marketing-brain:setup` | The brand brain: ICP, positioning and messaging, brand voice. [Details](https://github.com/conversionxl/cxl-marketing-brain#install-the-plugin-recommended) |
+| **campaign-engine** | `https://github.com/conversionxl/cxl-campaign-engine` | `/campaign-engine:setup` | Briefs, channel workflows, drafts and a quality gate. [Details](https://github.com/conversionxl/cxl-campaign-engine#install-the-plugin-recommended) |
+| **content-engine** | `https://github.com/conversionxl/cxl-content-engine` | `/content-engine:setup` | A keyword or a published URL in, a researched, fact-checked article in your voice out. [Details](https://github.com/conversionxl/cxl-content-engine#install-the-plugin-recommended) |
 
 ## Other AI tools
 
 Setup also writes an `AGENTS.md`. Codex, GitHub Copilot, Cursor and Grok read it, and it points them at `CLAUDE.md` and tells them where the routines are. In Gemini CLI, add `"context": {"fileName": ["AGENTS.md", "GEMINI.md"]}` to `.gemini/settings.json`. Those tools don't run the hooks, so daily logs are by hand there: ask for the shutdown routine at the end of the day. Already set up? Run `/personal-os:setup` again. It adds new files and never overwrites yours.
 
-## Changing how it works
+## Download and customize (advanced)
 
-Your folder is yours: `CLAUDE.md`, projects, memory and your own `.claude/skills/` are plain files. The plugin's commands and hooks update with the plugin. To change one, copy it into your folder's `.claude/commands/` and edit the copy. That is the first step toward the full VS Code route.
+The plugin is a working example of a full build, and a base to copy from. Install it first and use it as it is. Download it only when you want to change how it works and repurpose it for yourself.
+
+- **Change one command.** Copy it from this repository's `commands/` into your folder's `.claude/commands/` and edit the copy. Your folder is yours: `CLAUDE.md`, projects, memory and your own `.claude/skills/` are plain files, and your copy is used in place of the plugin's.
+- **Change the whole system.** Download or fork this repository and edit the commands, hooks and template. Then point Claude at your copy: in a terminal session, `/plugin marketplace add <path to your copy>`. Use your copy only. Two copies installed side by side run every hook twice.
+
+A customized copy no longer updates with the plugin. That is the trade: you own it.
