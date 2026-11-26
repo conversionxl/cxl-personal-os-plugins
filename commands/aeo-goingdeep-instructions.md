@@ -144,7 +144,7 @@ When they say it, tell them: the prompts are the main exercise and they're done.
 **What you do:**
 1. In n8n, click **Create workflow**.
 2. Click the **...** menu at the top right and choose **Import from URL**.
-3. Paste this address exactly: `https://raw.githubusercontent.com/tarekcxl/cxl-n8n-templates/refs/heads/main/ai-visibility-tracker-template.json`
+3. Paste this address exactly: `https://raw.githubusercontent.com/conversionxl/cxl-personal-os-plugins/main/n8n/ai-visibility-tracker-template.json`
 4. Click **Import**.
 
 **What you should see:** a canvas (the main workspace) with a chain of connected boxes, including ones called Config, Read Prompts, Ask ChatGPT (web search), Ask Claude (web search), Ask Perplexity (web search), Ask Gemini (web search), Save Answers, and Save Mention Rates. Yellow sticky notes sit next to the nodes. Nothing runs yet. Seconds.

@@ -1,0 +1,1414 @@
+{
+  "name": "AI Visibility Tracker (Template)",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "triggerAtDay": [
+                1
+              ],
+              "triggerAtHour": 7
+            }
+          ]
+        }
+      },
+      "id": "acdbe47b-103b-4ff9-b0c3-59a8c3c23098",
+      "name": "Weekly Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c1",
+              "name": "target_brand",
+              "type": "string",
+              "value": "YourBrand"
+            },
+            {
+              "id": "c2",
+              "name": "brand_aliases",
+              "type": "string",
+              "value": "YourBrand Inc, yourbrand.com"
+            },
+            {
+              "id": "c3",
+              "name": "test_mode",
+              "type": "boolean",
+              "value": true
+            },
+            {
+              "id": "c4",
+              "name": "test_prompt_limit",
+              "type": "number",
+              "value": 1
+            },
+            {
+              "id": "c5",
+              "name": "test_runs_per_prompt",
+              "type": "number",
+              "value": 5
+            },
+            {
+              "id": "c6",
+              "name": "test_providers",
+              "type": "string",
+              "value": "ChatGPT,Claude,Perplexity,Gemini"
+            },
+            {
+              "id": "c7",
+              "name": "full_runs_per_prompt",
+              "type": "number",
+              "value": 5
+            },
+            {
+              "id": "c8",
+              "name": "full_providers",
+              "type": "string",
+              "value": "ChatGPT,Claude,Perplexity,Gemini"
+            },
+            {
+              "id": "c13",
+              "name": "single_run_prompt_types",
+              "type": "string",
+              "value": "Brand"
+            },
+            {
+              "id": "c14",
+              "name": "single_run_count",
+              "type": "number",
+              "value": 1
+            },
+            {
+              "id": "c9",
+              "name": "run_id",
+              "type": "string",
+              "value": "={{ $execution.id }}"
+            },
+            {
+              "id": "c10",
+              "name": "run_started_at",
+              "type": "string",
+              "value": "={{ $now.toISO() }}"
+            },
+            {
+              "id": "c11",
+              "name": "week",
+              "type": "string",
+              "value": "={{ $now.toFormat(\"kkkk-'W'WW\") }}"
+            },
+            {
+              "id": "c12",
+              "name": "week_start",
+              "type": "string",
+              "value": "={{ $now.startOf('week').toFormat('yyyy-MM-dd') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b63cb6eb-da9e-4a88-928d-0c9e78ffc289",
+      "name": "Config",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        272,
+        224
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select your Prompts spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Sheet1",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "47dcdd5b-e3f1-439c-8617-51f4d9754513",
+      "name": "Read Prompts",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        496,
+        224
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6rbVHUqzje7fwVi1",
+          "name": "Google Sheets OAuth2 API [Bruno]"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Config').first().json;\nconst pick = (row, names) => {\n  const keys = Object.keys(row);\n  for (const n of names) {\n    const k = keys.find(x => x.trim().toLowerCase() === n);\n    if (k !== undefined && row[k] !== undefined && String(row[k]).trim() !== '') return row[k];\n  }\n  return undefined;\n};\nconst isActive = (v) => v === undefined || ['true', 'yes', '1', 'y'].includes(String(v).trim().toLowerCase());\nlet prompts = $input.all()\n  .map(i => i.json)\n  .map(r => ({\n    prompt_id: String(pick(r, ['prompt_id', 'id']) !== undefined ? pick(r, ['prompt_id', 'id']) : (r.row_number !== undefined ? r.row_number - 1 : '')),\n    prompt: pick(r, ['prompt']),\n    prompt_type: String(pick(r, ['prompt_type', 'category', 'type']) || '').trim().toLowerCase(),\n    active: pick(r, ['active']),\n  }))\n  .filter(r => r.prompt && String(r.prompt).trim() !== '' && isActive(r.active))\n  .sort((a, b) => String(a.prompt_id).localeCompare(String(b.prompt_id), undefined, { numeric: true }));\n\nconst testMode = cfg.test_mode === true || String(cfg.test_mode).toLowerCase() === 'true';\nconst runs = testMode ? Number(cfg.test_runs_per_prompt || 1) : Number(cfg.full_runs_per_prompt || 5);\nconst providers = String(testMode ? cfg.test_providers : cfg.full_providers).split(',').map(s => s.trim()).filter(Boolean);\nif (testMode && Number(cfg.test_prompt_limit) > 0) prompts = prompts.slice(0, Number(cfg.test_prompt_limit));\nif (prompts.length === 0) throw new Error('No active prompts found in the prompts sheet (needs a prompt column).');\n\nconst norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]/g, '');\nconst singleTypes = String(cfg.single_run_prompt_types || '').split(',').map(norm).filter(Boolean);\nconst singleCount = Number(cfg.single_run_count || 1);\nconst runsFor = (p) => singleTypes.includes(norm(p.prompt_type)) ? Math.min(singleCount, runs) : runs;\nconst items = [];\nfor (let run = 1; run <= runs; run++) {\n  for (const p of prompts) {\n    if (run > runsFor(p)) continue;\n    for (const provider of providers) {\n      items.push({ json: {\n        run_id: String(cfg.run_id),\n        week: cfg.week,\n        week_start: cfg.week_start,\n        mode: testMode ? 'test' : 'production',\n        prompt_id: p.prompt_id,\n        prompt: String(p.prompt).trim(),\n        prompt_type: p.prompt_type,\n        provider: provider,\n        run_number: run,\n        target_brand: cfg.target_brand,\n        brand_aliases: cfg.brand_aliases || '',\n      }});\n    }\n  }\n}\nreturn items;"
+      },
+      "id": "01002b62-5a85-4655-a4b4-a29a4b2226dd",
+      "name": "Build Call List",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        720,
+        224
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "ChatGPT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ChatGPT"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "Claude",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Claude"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "Perplexity",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Perplexity"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": false,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 1
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.provider }}",
+                    "rightValue": "Gemini",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Gemini"
+            }
+          ]
+        },
+        "options": {
+          "ignoreCase": true
+        }
+      },
+      "id": "3b7e4ba8-6cb6-4835-9f32-d83cc138e84d",
+      "name": "Route by AI Tool",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        1104,
+        16
+      ]
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-5-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-5-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "simplify": false,
+        "builtInTools": {
+          "webSearch": {
+            "searchContextSize": "medium"
+          }
+        },
+        "options": {
+          "maxTokens": 4000,
+          "store": false
+        }
+      },
+      "id": "1797617f-e9e5-49ee-911d-5b259f914329",
+      "name": "Ask ChatGPT (web search)",
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.3,
+      "position": [
+        1328,
+        -240
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "openAiApi": {
+          "id": "RVRsav3AK0hynP0E",
+          "name": "OpenAI account 2"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-5",
+          "cachedResultName": "claude-sonnet-5"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "options": {
+          "includeMergedResponse": true,
+          "webSearch": true,
+          "maxUses": 5,
+          "maxTokens": 4000
+        }
+      },
+      "id": "8db22dab-c4f4-408e-9cbc-134c613b10e5",
+      "name": "Ask Claude (web search)",
+      "type": "@n8n/n8n-nodes-langchain.anthropic",
+      "typeVersion": 1,
+      "position": [
+        1312,
+        -48
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "anthropicApi": {
+          "id": "F341R3cthb6N6OqN",
+          "name": "Anthropic account"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "input": "={{ $json.prompt }}",
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": ""
+        },
+        "preset": "low",
+        "options": {
+          "maxOutputTokens": 4000
+        },
+        "requestOptions": {
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 3000
+            }
+          },
+          "timeout": 180000
+        }
+      },
+      "id": "9ec6ddea-0365-48e3-9aa7-120d7527518c",
+      "name": "Ask Perplexity (web search)",
+      "type": "n8n-nodes-base.perplexity",
+      "typeVersion": 3,
+      "position": [
+        1328,
+        144
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "perplexityApi": {
+          "id": "Ydnazsjnz3UlHNkw",
+          "name": "Perplexity account"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "models/gemini-3.8-flash"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "={{ $json.prompt }}"
+            }
+          ]
+        },
+        "builtInTools": {
+          "googleSearch": true
+        },
+        "options": {
+          "includeMergedResponse": true,
+          "maxOutputTokens": 8000
+        }
+      },
+      "id": "80f40609-153b-4431-86b9-79436783108d",
+      "name": "Ask Gemini (web search)",
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1.2,
+      "position": [
+        1328,
+        336
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "credentials": {
+        "googlePalmApi": {
+          "id": "mTHS1U9thWO9KcVa",
+          "name": "Google Gemini(PaLM) Api account (AEO Project)"
+        }
+      },
+      "disabled": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {},
+      "id": "999b21a9-14a6-450e-8272-f98e21556846",
+      "name": "Run Manually",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: ChatGPT (OpenAI API)\n- Log in at platform.openai.com and open **API keys** (platform.openai.com/api-keys)\n- Click **Create new secret key**, name it (e.g. n8n) and copy it\n- In n8n: open **Ask ChatGPT**, credential > **Create new** > OpenAI\n- Paste the key in **API Key**. Organization ID: only if you belong to several orgs\n- Add credit under Billing. Without it calls fail with \"too many requests\" (insufficient_quota)\n- Model gpt-5-mini with web search on (change in the node if you like)",
+        "height": 340,
+        "width": 420,
+        "color": 4
+      },
+      "id": "6677b0c6-250e-4c12-ba32-f3d86f583721",
+      "name": "Setup: ChatGPT",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -768
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: Claude (Anthropic API)\n- Log in at console.anthropic.com > **Settings > API Keys**\n- Click **+ Create Key**, name it (e.g. n8n-integration), click **Copy Key**\n- In n8n: open **Ask Claude**, credential > **Create new** > Anthropic\n- Paste the key in **API Key** and save\n- Make sure the Console account has credit (Billing), or calls fail\n- Web search is switched on inside the node",
+        "height": 320,
+        "width": 420,
+        "color": 4
+      },
+      "id": "1d0a30c1-dee6-4dbb-aeee-73f5c64dac95",
+      "name": "Setup: Claude",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -768
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: Perplexity API\n- Log in to your Perplexity account and create an API key (guide: docs.perplexity.ai/guides/getting-started)\n- Add a payment method / credit for the API\n- In n8n: open **Ask Perplexity**, credential > **Create new** > Perplexity, paste the key\n- \"Test connection\" can show **Forbidden**: ignore it. The test uses an old endpoint; the node itself works\n- The node sends 1 call every 3 seconds to stay under Perplexity's rate limit",
+        "height": 320,
+        "width": 420,
+        "color": 4
+      },
+      "id": "93b5c56a-578d-4854-b154-b4612f36deea",
+      "name": "Setup: Perplexity",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        -1120
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: Gemini (Google AI Studio)\n- Go to aistudio.google.com/apikey\n- Click **Create API Key** (new or existing Google Cloud project) and copy it\n- Turn on billing for that project. The free tier hits quota fast (429 errors)\n- In n8n: open **Ask Gemini**, credential > **Create new** > Google Gemini(PaLM) API\n- Paste the key in **API Key**. Keep Host as https://generativelanguage.googleapis.com\n- Google Search grounding is switched on inside the node",
+        "height": 340,
+        "width": 420,
+        "color": 4
+      },
+      "id": "3d099baf-3116-4149-be6d-ae7388a8db82",
+      "name": "Setup: Gemini",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1520,
+        -1136
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: Google Sheets (create these first)\nCopying this template? Create **2 spreadsheets** in Google Drive. Header names go in **row 1**, spelled exactly as below (lowercase, underscores).\n\n### Spreadsheet 1: Prompts (e.g. \"AI Visibility Prompts\")\n**Tab: Sheet1** (one row per question you want to ask the AI tools)\n- **prompt_id**: number, e.g. 1, 2, 3\n- **prompt**: the question, e.g. \"What are the best AI marketing courses?\"\n- **prompt_type**: group name, e.g. Brand, Industry, Customer problems\n- **active**: TRUE to include, FALSE to skip (empty column = all included)\nTip: prompt_type \"Brand\" runs once per tool (set in Config > single_run_prompt_types); all other types run 5 times (change in Config)\n\n### Spreadsheet 2: Run Log (e.g. \"AI Visibility Run Log\")\nLeave the data rows empty. The workflow fills them.\n**Tab: Answers** (one row per AI answer)\ntimestamp, week, week_start, run_id, mode, prompt_id, prompt, prompt_type, provider, run_number, brand_mentioned, status, error, answer\n\n**Tab: Mention Rates** (one row per prompt per AI tool, plus an \"ALL\" total per tool)\nweek, week_start, run_id, mode, prompt_id, prompt, prompt_type, provider, responses, mentions, failed, mention_rate\n\n### Connect in n8n\n- Open any Sheets node > credential > **Create new** > Google Sheets OAuth2 > **Sign in with Google**\n- Use an account that can **edit** both spreadsheets; select the same credential on all 4 Sheets nodes\n- **Read Prompts**: pick spreadsheet 1, tab Sheet1\n- **Save Answers**: spreadsheet 2, tab Answers\n- **Read Previous Rates** + **Save Mention Rates**: spreadsheet 2, tab Mention Rates\n- Tab names must match exactly (Answers, Mention Rates); columns are matched by header name",
+        "height": 860,
+        "width": 620
+      },
+      "id": "6e868495-3443-4763-8013-ca1539c99dc6",
+      "name": "Setup: Google Sheets",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        224,
+        -800
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Setup: Slack connection\n- In n8n: open **Post Slack Summary**, credential > **Create new** > Slack OAuth2 API\n- Click **Connect my account**\n- Choose where the report goes: **Send Message To** \n- For a channel: pick it from the list. If Slack says not_in_channel, add the n8n app to that channel\n",
+        "height": 300,
+        "width": 420
+      },
+      "id": "99488682-7c5c-410a-8253-d9909c3b00b5",
+      "name": "Setup: Slack",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1056,
+        3280
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "id": "ba43b26a-0f5c-499c-b481-70be87cc776b",
+      "name": "Collect Answers",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        1600,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pair each answer with its call by position within its AI tool branch\nconst safeAll = (name, out) => { try { return out === undefined ? $(name).all() : $(name).all(out); } catch (e) { return []; } };\nconst pairs = [];\nconst branches = [['Ask ChatGPT (web search)', 0], ['Ask Claude (web search)', 1], ['Ask Perplexity (web search)', 2], ['Ask Gemini (web search)', 3]];\nfor (const [aiNode, outIdx] of branches) {\n  const metas = safeAll('Route by AI Tool', outIdx);\n  const answers = safeAll(aiNode);\n  const n = Math.min(metas.length, answers.length);\n  for (let i = 0; i < n; i++) pairs.push({ meta: metas[i].json, r: answers[i].json || {} });\n}\n\nconst extract = (r) => {\n  let text = '';\n  if (r.error) return { status: 'error', error: typeof r.error === 'string' ? r.error : JSON.stringify(r.error), text: '' };\n  if (Array.isArray(r.output)) {\n    for (const o of r.output) {\n      if (o && o.type === 'message' && Array.isArray(o.content)) {\n        for (const c of o.content) { if (typeof c.text === 'string') text += c.text; }\n      }\n    }\n  }\n  if (Array.isArray(r.content)) {\n    for (const b of r.content) { if (b && b.type === 'text') text += b.text || ''; }\n  }\n  if (r.content && !Array.isArray(r.content) && Array.isArray(r.content.parts)) {\n    for (const pt of r.content.parts) { if (pt && typeof pt.text === 'string' && !pt.thought) text += pt.text; }\n  }\n  if (!text && Array.isArray(r.candidates) && r.candidates[0] && r.candidates[0].content && Array.isArray(r.candidates[0].content.parts)) {\n    for (const pt of r.candidates[0].content.parts) { if (pt && typeof pt.text === 'string' && !pt.thought) text += pt.text; }\n  }\n  if (!text && typeof r.merged_response === 'string') text = r.merged_response;\n  if (!text && typeof r.output_text === 'string') text = r.output_text;\n  if (!String(text).trim()) return { status: 'error', error: 'Empty answer from AI tool', text: '' };\n  return { status: 'ok', error: '', text: String(text) };\n};\n\nconst isWordChar = ch => /[a-z0-9]/i.test(ch);\nconst hasWord = (lower, name) => {\n  const n = name.toLowerCase();\n  let i = lower.indexOf(n);\n  while (i !== -1) {\n    const before = i === 0 ? '' : lower[i - 1];\n    const after = lower[i + n.length] || '';\n    if (!(before && isWordChar(before)) && !(after && isWordChar(after))) return true;\n    i = lower.indexOf(n, i + 1);\n  }\n  return false;\n};\n\nreturn pairs.map(({ meta, r }) => {\n  const x = extract(r);\n  let mentioned = '';\n  if (x.status === 'ok') {\n    const names = [meta.target_brand].concat(String(meta.brand_aliases || '').split(','))\n      .map(s => String(s || '').trim()).filter(Boolean);\n    const lower = x.text.toLowerCase();\n    mentioned = names.some(nm => hasWord(lower, nm)) ? 'TRUE' : 'FALSE';\n  }\n  return { json: {\n    timestamp: new Date().toISOString(),\n    week: meta.week, week_start: meta.week_start, run_id: meta.run_id, mode: meta.mode,\n    prompt_id: meta.prompt_id, prompt: meta.prompt, prompt_type: meta.prompt_type,\n    provider: meta.provider, run_number: meta.run_number,\n    brand_mentioned: mentioned, status: x.status, error: String(x.error).slice(0, 1000),\n    answer: x.text.length > 20000 ? x.text.slice(0, 20000) + ' [truncated]' : x.text,\n  } };\n});"
+      },
+      "id": "3d8c34d7-8b76-4d79-a23f-c118ffd9b7dd",
+      "name": "Check Brand Mention",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1776,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select your Run Log spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Answers",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "timestamp",
+              "displayName": "timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "week",
+              "displayName": "week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "week_start",
+              "displayName": "week_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "mode",
+              "displayName": "mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "prompt_id",
+              "displayName": "prompt_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "prompt_type",
+              "displayName": "prompt_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "provider",
+              "displayName": "provider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "run_number",
+              "displayName": "run_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "brand_mentioned",
+              "displayName": "brand_mentioned",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "error",
+              "displayName": "error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "answer",
+              "displayName": "answer",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "817235fe-f1c5-4cde-9b13-95a4565ff455",
+      "name": "Save Answers",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2208,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 10000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6rbVHUqzje7fwVi1",
+          "name": "Google Sheets OAuth2 API [Bruno]"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select your Run Log spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Mention Rates",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "c0a89e14-db46-447a-afbc-52dd36b79f1a",
+      "name": "Read Previous Rates",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2416,
+        608
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cfg = $('Config').first().json;\nconst calls = $('Build Call List').all().map(i => i.json);\nconst results = $('Check Brand Mention').all().map(i => i.json);\nconst testMode = cfg.test_mode === true || String(cfg.test_mode).toLowerCase() === 'true';\nconst providers = String(testMode ? cfg.test_providers : cfg.full_providers).split(',').map(s => s.trim()).filter(Boolean);\n\n// One result per planned call (prompt + provider + run number); missing/failed results count as failed\nconst byCall = new Map();\nfor (const r of results) {\n  if (!r || r.prompt_id === undefined || !r.provider) continue;\n  const k = [r.prompt_id, r.provider, r.run_number].join('|');\n  if (!byCall.has(k) || r.status === 'ok') byCall.set(k, r);\n}\n\nconst prompts = [];\nconst seenP = new Set();\nfor (const c of calls) { if (!seenP.has(c.prompt_id)) { seenP.add(c.prompt_id); prompts.push(c); } }\n\nfunction tally(list) {\n  const ok = list.filter(r => r && r.status === 'ok');\n  const mentions = ok.filter(r => String(r.brand_mentioned).toUpperCase() === 'TRUE').length;\n  return { attempted: list.length, responses: ok.length, mentions, failed: list.length - ok.length, rate: ok.length ? mentions / ok.length : null };\n}\n\n// Previous week (latest production week before this one) from the Mention Rates tab\nconst prevAll = $input.all().map(i => i.json).filter(r => r && r.week && r.mode === 'production' && String(r.week) < String(cfg.week));\nlet prevMap = new Map();\nif (prevAll.length) {\n  const lastWeek = prevAll.map(r => String(r.week)).sort().pop();\n  const wk = prevAll.filter(r => String(r.week) === lastWeek);\n  const lastRun = wk.map(r => String(r.run_id)).sort((a, b) => Number(a) - Number(b)).pop();\n  for (const r of wk.filter(r => String(r.run_id) === lastRun)) {\n    const resp = Number(r.responses), m = Number(r.mentions);\n    prevMap.set(String(r.prompt_id) + '|' + r.provider, resp ? m / resp : null);\n  }\n}\n\nconst pct = v => (v === null || v === undefined ? 'n/a' : Math.round(v * 100) + '%');\nconst delta = (cur, prev) => {\n  if (cur === null || prev === null || prev === undefined) return '';\n  const d = Math.round((cur - prev) * 100);\n  return ' (' + (d >= 0 ? '+' : '') + d + 'pp)';\n};\n\nconst rows = [];\nconst addRow = (p, prov, t) => rows.push({ json: {\n  week: cfg.week, week_start: cfg.week_start, run_id: String(cfg.run_id), mode: testMode ? 'test' : 'production',\n  prompt_id: p.prompt_id, prompt: p.prompt, prompt_type: p.prompt_type, provider: prov,\n  responses: t.responses, mentions: t.mentions, failed: t.failed,\n  mention_rate: t.rate === null ? '' : Math.round(t.rate * 1000) / 10,\n} });\n\nconst FENCE = String.fromCharCode(96).repeat(3);\nconst padR = (v, n) => { v = String(v); return v.length > n ? v.slice(0, n - 1) + '~' : v + ' '.repeat(n - v.length); };\nconst padL = (v, n) => { v = String(v); return v.length >= n ? v : ' '.repeat(n - v.length) + v; };\nconst shortDelta = (cur, prev) => {\n  if (cur === null || prev === null || prev === undefined) return '';\n  const d = Math.round((cur - prev) * 100);\n  return d === 0 ? ' =' : (d > 0 ? ' +' : ' ') + d;\n};\nconst cell = (t, prev) => {\n  if (t.rate === null) return t.failed ? 'fail' : '-';\n  return pct(t.rate) + shortDelta(t.rate, prev) + (t.failed ? '*' : '');\n};\nconst COLW = 12;\nconst niceType = t => String(t).split(' ').map(w => ['b2b','ai'].includes(w.toLowerCase()) ? w.toUpperCase() : w.charAt(0).toUpperCase() + w.slice(1)).join(' ');\nlet anyFailed = false;\n\nconst lines = [];\nlines.push(':bar_chart: *AI Visibility Report: ' + cfg.target_brand + '*  |  week of ' + cfg.week_start + (testMode ? '  _(TEST RUN)_' : ''));\nlines.push('_Mention rate = share of answers that name ' + cfg.target_brand + '. +/- = change vs last week in points._');\nlines.push('');\nlines.push('*Overall*');\nconst ov = [];\nov.push(padR('AI tool', 12) + padL('Rate', 6) + padL('Change', 8) + padL('Mentions', 10) + padL('Failed', 8));\nov.push('-'.repeat(44));\nfor (const prov of providers) {\n  const list = calls.filter(c => c.provider === prov).map(c => byCall.get([c.prompt_id, c.provider, c.run_number].join('|')) || { status: 'missing' });\n  const t = tally(list);\n  addRow({ prompt_id: 'ALL', prompt: 'All prompts', prompt_type: '' }, prov, t);\n  const dl = shortDelta(t.rate, prevMap.get('ALL|' + prov)).trim();\n  ov.push(padR(prov, 12) + padL(pct(t.rate), 6) + padL(dl ? dl + 'pp' : '', 8) + padL(t.mentions + '/' + t.responses, 10) + padL(t.failed || '', 8));\n}\nlines.push(FENCE + ov.join('\\n') + FENCE);\nlines.push('');\n\n// Per prompt, one table per prompt type\nconst types = [];\nfor (const p of prompts) { const ty = p.prompt_type || 'Other'; if (!types.includes(ty)) types.push(ty); }\nfor (const ty of types) {\n  const tbl = [];\n  tbl.push(padR('#', 4) + padR('Prompt', 34) + providers.map(pr => padL(pr, COLW)).join(''));\n  tbl.push('-'.repeat(38 + COLW * providers.length));\n  for (const p of prompts.filter(x => (x.prompt_type || 'Other') === ty)) {\n    const cells = [];\n    for (const prov of providers) {\n      const list = calls.filter(c => c.prompt_id === p.prompt_id && c.provider === prov).map(c => byCall.get([c.prompt_id, c.provider, c.run_number].join('|')) || { status: 'missing' });\n      const t = tally(list);\n      addRow(p, prov, t);\n      if (t.failed) anyFailed = true;\n      cells.push(padL(cell(t, prevMap.get(String(p.prompt_id) + '|' + prov)), COLW));\n    }\n    tbl.push(padR(p.prompt_id, 4) + padR(String(p.prompt).replace(/\\s+/g, ' '), 33) + ' ' + cells.join(''));\n  }\n  const runs = calls.filter(c => (c.prompt_type || 'Other') === ty && c.provider === providers[0]);\n  const perPrompt = runs.length ? Math.round(runs.length / prompts.filter(x => (x.prompt_type || 'Other') === ty).length) : 0;\n  lines.push('*' + niceType(ty) + '*  _(' + perPrompt + ' run' + (perPrompt === 1 ? '' : 's') + ' per prompt per tool)_');\n  lines.push(FENCE + tbl.join('\\n') + FENCE);\n  lines.push('');\n}\nif (anyFailed) lines.push('_* some calls failed; rate is based on answers received. fail = every call failed. Full prompts and counts are in the Mention Rates tab._');\nelse lines.push('_Full prompts and counts are in the Mention Rates tab._');\n\n// Markdown version of the same report (real tables, for the .md file)\nconst mdEsc = v => String(v).replace(/\\s+/g, ' ').replace(/[|]/g, '/');\nconst md = [];\nmd.push('# AI Visibility Report: ' + cfg.target_brand);\nmd.push('');\nmd.push('Week of ' + cfg.week_start + ' (' + cfg.week + ')' + (testMode ? ' - TEST RUN' : ''));\nmd.push('');\nmd.push('Mention rate = share of answers that name ' + cfg.target_brand + '. Change = vs last week, in percentage points.');\nmd.push('');\nmd.push('## Overall');\nmd.push('');\nmd.push('| AI tool | Rate | Change | Mentions | Failed |');\nmd.push('|---|---:|---:|---:|---:|');\nfor (const prov of providers) {\n  const list = calls.filter(c => c.provider === prov).map(c => byCall.get([c.prompt_id, c.provider, c.run_number].join('|')) || { status: 'missing' });\n  const t = tally(list);\n  const dl = shortDelta(t.rate, prevMap.get('ALL|' + prov)).trim();\n  md.push('| ' + prov + ' | ' + pct(t.rate) + ' | ' + (dl ? dl + 'pp' : '') + ' | ' + t.mentions + '/' + t.responses + ' | ' + (t.failed || '') + ' |');\n}\nmd.push('');\nfor (const ty of types) {\n  const tp = prompts.filter(x => (x.prompt_type || 'Other') === ty);\n  const runs = calls.filter(c => (c.prompt_type || 'Other') === ty && c.provider === providers[0]);\n  const perPrompt = tp.length ? Math.round(runs.length / tp.length) : 0;\n  md.push('## ' + niceType(ty));\n  md.push('');\n  md.push('_' + perPrompt + ' run' + (perPrompt === 1 ? '' : 's') + ' per prompt per tool_');\n  md.push('');\n  md.push('| # | Prompt | ' + providers.join(' | ') + ' |');\n  md.push('|---|---|' + providers.map(() => '---:').join('|') + '|');\n  for (const p of tp) {\n    const cells = providers.map(prov => {\n      const list = calls.filter(c => c.prompt_id === p.prompt_id && c.provider === prov).map(c => byCall.get([c.prompt_id, c.provider, c.run_number].join('|')) || { status: 'missing' });\n      return cell(tally(list), prevMap.get(String(p.prompt_id) + '|' + prov));\n    });\n    md.push('| ' + p.prompt_id + ' | ' + mdEsc(p.prompt) + ' | ' + cells.join(' | ') + ' |');\n  }\n  md.push('');\n}\nmd.push(anyFailed ? '_\\* some calls failed; rate is based on answers received. fail = every call failed._' : '_All calls returned an answer._');\n\nlet text = lines.join('\\n');\nif (text.length > 39000) text = text.slice(0, 39000) + '\\n... (truncated, see the Mention Rates tab)';\nrows[0].json.slack_text = text;\nrows[0].json.md_text = md.join('\\n');\nreturn rows;"
+      },
+      "id": "c9a52875-8d82-45ad-aed8-0223be48f9d1",
+      "name": "Calculate Mention Rates",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2640,
+        608
+      ]
+    },
+    {
+      "parameters": {
+        "select": "user",
+        "user": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select who receives the report"
+        },
+        "text": "={{ $('Calculate Mention Rates').first().json.slack_text }}",
+        "otherOptions": {
+          "includeLinkToWorkflow": false
+        }
+      },
+      "id": "64c7970e-3fb1-4c89-b6c1-e64261c67db7",
+      "name": "Post Slack Summary",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        2864,
+        512
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "webhookId": "c024a2b3-cb4e-47c1-8fe6-fbcb1587abd4",
+      "credentials": {
+        "slackApi": {
+          "id": "jrKpVfwQY0fKyoSC",
+          "name": "CXL Page Watch Bot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "md1",
+              "name": "md_text",
+              "type": "string",
+              "value": "={{ $('Calculate Mention Rates').first().json.md_text }}"
+            },
+            {
+              "id": "md2",
+              "name": "slack_channel",
+              "type": "string",
+              "value": "={{ $json.channel }}"
+            },
+            {
+              "id": "md3",
+              "name": "slack_ts",
+              "type": "string",
+              "value": "={{ $json.ts }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2e9d3f7e-d009-4a61-8064-0904ec9a59db",
+      "name": "Get Markdown Report",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        3088,
+        512
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "toText",
+        "sourceProperty": "md_text",
+        "options": {
+          "encoding": "utf8",
+          "fileName": "=AI-Visibility-Report-{{ $('Config').first().json.week }}.md"
+        }
+      },
+      "id": "bfb82129-2ea4-4205-b590-c4b127050eb4",
+      "name": "Make Markdown File",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        3312,
+        512
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "authentication": "oAuth2",
+        "resource": "file",
+        "options": {
+          "channelId": "={{ $('Get Markdown Report').first().json.slack_channel }}",
+          "fileName": "=AI-Visibility-Report-{{ $('Config').first().json.week }}.md",
+          "initialComment": "Markdown version of this week's report",
+          "title": "=AI Visibility Report {{ $('Config').first().json.week }} (Markdown)"
+        }
+      },
+      "id": "fd019ad5-bdfb-4d2f-9492-537e8ba64d15",
+      "name": "Send Report File to Slack",
+      "type": "n8n-nodes-base.slack",
+      "typeVersion": 2.7,
+      "position": [
+        3536,
+        416
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "webhookId": "99a7aee4-064b-483d-ba33-cd1225122232",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sendTo": "<__PLACEHOLDER_VALUE__Email address(es) that receive the report, comma separated__>",
+        "subject": "=AI Visibility Report {{ $('Config').first().json.week }}",
+        "emailType": "text",
+        "message": "=Hi,\n\nAttached is the AI Visibility report for {{ $('Config').first().json.week }} in Markdown format (CXL mention rate per prompt for each AI tool). The same report was also posted to Slack.\n\nThe full report is included below in Markdown.\n\n----- BEGIN REPORT (Markdown) -----\n\n{{ $('Calculate Mention Rates').first().json.md_text }}\n\n----- END REPORT -----",
+        "options": {
+          "appendAttribution": false,
+          "attachmentsUi": {
+            "attachmentsBinary": [
+              {}
+            ]
+          }
+        }
+      },
+      "id": "c5b27609-5c50-4c72-ad19-be1525833056",
+      "name": "Email Report File",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        3536,
+        608
+      ],
+      "executeOnce": true,
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 10000,
+      "webhookId": "225b7e5e-f0e6-4d1c-9cb7-62906984def1",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jVfMN1mZRiK2gkPh",
+          "name": "Gmail account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": []
+        },
+        "includeOtherFields": true,
+        "include": "except",
+        "excludeFields": "slack_text,md_text",
+        "options": {}
+      },
+      "id": "ba350d76-7fd8-4c10-8e83-c40625526ac7",
+      "name": "Prepare Rate Rows",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2864,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "",
+          "cachedResultName": "Select your Run Log spreadsheet"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Mention Rates",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "week",
+              "displayName": "week",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "week_start",
+              "displayName": "week_start",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "run_id",
+              "displayName": "run_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "mode",
+              "displayName": "mode",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "prompt_id",
+              "displayName": "prompt_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "prompt_type",
+              "displayName": "prompt_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "provider",
+              "displayName": "provider",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "responses",
+              "displayName": "responses",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "mentions",
+              "displayName": "mentions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "failed",
+              "displayName": "failed",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "mention_rate",
+              "displayName": "mention_rate",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0bd74a75-4af6-4134-970c-dadb639436c4",
+      "name": "Save Mention Rates",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        3088,
+        704
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 10000,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "6rbVHUqzje7fwVi1",
+          "name": "Google Sheets OAuth2 API [Bruno]"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Weekly Schedule": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Config": {
+      "main": [
+        [
+          {
+            "node": "Read Prompts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Prompts": {
+      "main": [
+        [
+          {
+            "node": "Build Call List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Call List": {
+      "main": [
+        [
+          {
+            "node": "Route by AI Tool",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route by AI Tool": {
+      "main": [
+        [
+          {
+            "node": "Ask ChatGPT (web search)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Claude (web search)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Perplexity (web search)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Ask Gemini (web search)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask ChatGPT (web search)": {
+      "main": [
+        [
+          {
+            "node": "Collect Answers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask Claude (web search)": {
+      "main": [
+        [
+          {
+            "node": "Collect Answers",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Ask Perplexity (web search)": {
+      "main": [
+        [
+          {
+            "node": "Collect Answers",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Ask Gemini (web search)": {
+      "main": [
+        [
+          {
+            "node": "Collect Answers",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Run Manually": {
+      "main": [
+        [
+          {
+            "node": "Config",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Answers": {
+      "main": [
+        [
+          {
+            "node": "Check Brand Mention",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Brand Mention": {
+      "main": [
+        [
+          {
+            "node": "Save Answers",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Read Previous Rates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Previous Rates": {
+      "main": [
+        [
+          {
+            "node": "Calculate Mention Rates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculate Mention Rates": {
+      "main": [
+        [
+          {
+            "node": "Post Slack Summary",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare Rate Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Post Slack Summary": {
+      "main": [
+        [
+          {
+            "node": "Get Markdown Report",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Markdown Report": {
+      "main": [
+        [
+          {
+            "node": "Make Markdown File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Make Markdown File": {
+      "main": [
+        [
+          {
+            "node": "Send Report File to Slack",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Email Report File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Rate Rows": {
+      "main": [
+        [
+          {
+            "node": "Save Mention Rates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "35bd27f2-2c13-41b2-ace9-c42c8919a21e",
+  "meta": {
+    "instanceId": "6c25709e89c48e3869ccd1fc0b916459ace5ee9ab06c3bd52c82dfeff752a580"
+  },
+  "nodeGroups": [
+    {
+      "id": "65adeecc-2c24-46fe-8a51-dfe0beb259b9",
+      "name": "Prepare call list",
+      "nodeIds": [
+        "b63cb6eb-da9e-4a88-928d-0c9e78ffc289",
+        "47dcdd5b-e3f1-439c-8617-51f4d9754513",
+        "01002b62-5a85-4655-a4b4-a29a4b2226dd"
+      ],
+      "description": "Reads active prompts and expands them into one call per prompt, run and AI tool (test mode keeps it small)"
+    },
+    {
+      "id": "a49b79aa-658c-4f3f-96ac-b7ee9461a1e6",
+      "name": "Ask AI tools",
+      "nodeIds": [
+        "3b7e4ba8-6cb6-4835-9f32-d83cc138e84d",
+        "1797617f-e9e5-49ee-911d-5b259f914329",
+        "8db22dab-c4f4-408e-9cbc-134c613b10e5",
+        "9ec6ddea-0365-48e3-9aa7-120d7527518c",
+        "80f40609-153b-4431-86b9-79436783108d",
+        "ba43b26a-0f5c-499c-b481-70be87cc776b",
+        "3d8c34d7-8b76-4d79-a23f-c118ffd9b7dd"
+      ],
+      "description": "Each call goes to ChatGPT, Claude, Perplexity or Gemini with web search on; every answer is checked for a mention of your brand"
+    },
+    {
+      "id": "2193e643-e376-432f-bfd9-c6ee46912054",
+      "name": "Report mention rates",
+      "nodeIds": [
+        "c0a89e14-db46-447a-afbc-52dd36b79f1a",
+        "c9a52875-8d82-45ad-aed8-0223be48f9d1",
+        "64c7970e-3fb1-4c89-b6c1-e64261c67db7",
+        "ba350d76-7fd8-4c10-8e83-c40625526ac7",
+        "0bd74a75-4af6-4134-970c-dadb639436c4",
+        "2e9d3f7e-d009-4a61-8064-0904ec9a59db",
+        "bfb82129-2ea4-4205-b590-c4b127050eb4",
+        "fd019ad5-bdfb-4d2f-9492-537e8ba64d15",
+        "c5b27609-5c50-4c72-ad19-be1525833056"
+      ],
+      "description": "Your brand only: rate per prompt and AI tool vs last week, posted to Slack (text + .md file), emailed as .md and saved to Sheets"
+    }
+  ],
+  "id": "79VDfW5cgx7XZyf6",
+  "tags": []
+}
