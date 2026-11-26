@@ -13,29 +13,29 @@ You install the plugin into Claude, and Claude keeps its own copy. Your working 
 | | The plugin (this repository) | Your folder |
 |---|---|---|
 | What it is | The commands, hooks and skills | Your projects, logs, memory and `CLAUDE.md` |
-| Where it lives | In Claude, installed from **Settings → Plugins** | Anywhere on your computer, such as `Documents/personal-os` |
+| Where it lives | In Claude, installed from **Customize → Plugins** | Anywhere on your computer, such as `Documents/personal-os` |
 | How you get it | Install it (below). Download it only to customize it (the advanced route, further down) | Make an empty folder and run `/personal-os:setup` in it |
 
 Want to change how the system works and repurpose it for yourself? That is the advanced route: see [Download and customize](#download-and-customize-advanced).
 
 ## Install the plugin (recommended)
 
-Install it **one way only**: from **Settings → Plugins** in Claude. Installed twice, every hook runs twice.
+Install it **one way only**: from **Customize → Plugins** in Claude. Installed twice, every hook runs twice.
 
 1. Open Claude: claude.ai or the desktop app ([claude.ai/download](https://claude.ai/download)).
-2. Open **Settings → Plugins**, click **Add → Add marketplace**, and choose the GitHub repo option.
+2. Open **Customize** in the left sidebar, then the **Plugins** tab. Click **Add → Add marketplace → Add from a repository**.
 3. Enter `conversionxl/cxl-personal-os-plugins`, then add **Personal os**. It then shows under **From marketplaces you added**.
 
-   **No "Add marketplace" under Add, only "Upload plugin" and "Create with Claude"?** You're in the desktop app's **Code** mode. Switch to **Chat** mode (top left), then open **Settings → Plugins → Add** again. Add marketplace shows there. The plugin still syncs to the Code tab afterwards.
-4. Make an empty folder, such as `Documents/personal-os`. Open it in either:
-   - the desktop app's **Code** tab, with **Environment** set to **Local** and the folder picked as **Project folder** (set to Cloud, it only offers repositories), or
-   - **Cowork**. Commands work there, but daily logs are not automatic (see below).
+   **No "Add marketplace" under Add, only "Upload plugin" and "Create with Claude"?** You're in the desktop app's **Code** mode. Switch to **Chat** mode (top left), then open **Customize → Plugins → Add** again. Add marketplace shows there. The plugin still syncs to the Code tab afterwards.
+4. Make an empty folder, such as `Documents/personal-os`, or use a folder you already work in: setup keeps your own folder names. Open it in the desktop app's **Code** tab, with **Environment** set to **Local** and the folder picked as **Project folder** (set to Cloud, it only offers repositories).
 
    Then type `/personal-os:setup`.
 
-The plugin is saved to your claude.ai account, not your computer. Claude syncs it to chat, Cowork, the desktop app, VS Code and the terminal, so you install it once. Code on claude.ai is the one exception: it only runs cloud sessions on a GitHub repository, and cloud sessions don't load plugins. For the Code tab, use the desktop app.
+**Does your screen look different?** Claude's interface changes often. If a menu or button is not where these steps say, post in **Ask for help** in the CXL community and we will update them.
 
-**Only if you can't use Settings → Plugins:** in a terminal or VS Code session, in an empty folder:
+The plugin is saved to your claude.ai account, not your computer. Claude syncs it to chat, the desktop app, VS Code and the terminal, so you install it once. Code on claude.ai is the one exception: it only runs cloud sessions on a GitHub repository, and cloud sessions don't load plugins. For the Code tab, use the desktop app.
+
+**Only if you can't use Customize → Plugins:** in a terminal or VS Code session, in an empty folder:
 
 ```
 /plugin marketplace add conversionxl/cxl-personal-os-plugins
@@ -43,15 +43,15 @@ The plugin is saved to your claude.ai account, not your computer. Claude syncs i
 /personal-os:setup
 ```
 
-This makes a second, local copy that lives on this computer only. Never use it as well as the Settings → Plugins route.
+This makes a second, local copy that lives on this computer only. Never use it as well as the Customize → Plugins route.
 
 ### Still no "Add marketplace"? Upload the ZIP
 
-**[Download personal-os.zip](https://github.com/conversionxl/cxl-personal-os-plugins/releases/download/plugin-zips/personal-os.zip)** and upload it in **Settings → Plugins → Add → Upload plugin** as it is: don't unzip it.
+**[Download personal-os.zip](https://github.com/conversionxl/cxl-personal-os-plugins/releases/download/plugin-zips/personal-os.zip)** and upload it in **Customize → Plugins → Add → Upload plugin** as it is: don't unzip it.
 
 **Don't use the green Code → Download ZIP button on this page.** That ZIP puts everything inside a `cxl-personal-os-plugins-main` folder, so the upload can't find the plugin and fails with "The archive must contain a .claude-plugin/plugin.json manifest".
 
-An uploaded plugin doesn't update itself. For a new version, download the ZIP again, remove the old plugin in **Settings → Plugins**, and upload the new one. If you later get the marketplace option, remove the uploaded plugin first, so you keep one copy.
+An uploaded plugin doesn't update itself. For a new version, download the ZIP again, remove the old plugin in **Customize → Plugins**, and upload the new one. If you later get the marketplace option, remove the uploaded plugin first, so you keep one copy.
 
 ## Troubleshooting: a local copy and a synced copy
 
@@ -59,7 +59,7 @@ A plugin reaches Claude Code in one of two ways:
 
 | Copy | How it got there | Listed in `/plugin` as |
 |---|---|---|
-| **Synced** (the one to keep) | Added in **Settings → Plugins** on claude.ai or the desktop app | `personal-os@synced` |
+| **Synced** (the one to keep) | Added in **Customize → Plugins** on claude.ai or the desktop app | `personal-os@synced` |
 | **Local** | Typed `/plugin marketplace add` and `/plugin install` in a terminal or VS Code | `personal-os@cxl-personal-os-plugins` |
 
 **Signs you have both:** two daily logs for the same session, the session-start context printed twice, or every command listed twice.
@@ -72,20 +72,19 @@ Remove the local copy of the personal-os plugin and its cxl-personal-os-plugins 
 
 Then fully quit and reopen Claude. (By hand: `/plugin uninstall personal-os@cxl-personal-os-plugins`, then `/plugin marketplace remove cxl-personal-os-plugins`.)
 
-**Plugin missing in VS Code or the terminal after you added it in Settings → Plugins?** The sync can take a few minutes. Fully quit and reopen. Don't fix it by adding the local copy: that's how you end up with two.
+**Plugin missing in VS Code or the terminal after you added it in Customize → Plugins?** The sync can take a few minutes. Fully quit and reopen. Don't fix it by adding the local copy: that's how you end up with two.
 
 **Opened this repository as your folder by mistake?** Close it, make an empty folder of your own, install the plugin as above, and run `/personal-os:setup` there. The downloaded copy can be deleted.
 
 ## Updating
 
-Keep automatic sync on in Claude and new versions reach you on their own. Not seeing an update yet? Go to **Settings → Plugins → Add → Manage marketplaces → ⋮** next to the marketplace → **Check for updates**. Your folder, logs and projects are untouched.
+Keep automatic sync on in Claude and new versions reach you on their own. Not seeing an update yet? Go to **Customize → Plugins → Add → Manage marketplaces → ⋮** next to the marketplace → **Check for updates**. Your folder, logs and projects are untouched.
 
 ## Where it works
 
 | Where | What loads |
 |---|---|
 | Desktop app: Code tab (Environment: Local), terminal, VS Code | Everything |
-| Cowork | Commands, skills and agents. **No automatic daily logs:** Cowork runs hooks in its own workspace, where your folder isn't, so run `/personal-os:shutdown` at the end of each day. Memory is written through the shell, because Cowork's file tools can't write inside `.claude/` |
 | claude.ai chat | Skills only |
 | claude.ai/code in a browser, or the Code tab with Environment: Cloud | Nothing. Cloud sessions do not load plugins |
 
@@ -126,7 +125,7 @@ The plugin is installed once for your whole account, so its hooks would otherwis
 
 ## Workshop plugins
 
-Each workshop has its own plugin in its own marketplace. Add each one from **Settings → Plugins** the same way as personal-os, then run its setup in your personal OS folder. The same rules apply: install from Settings → Plugins, don't download the repository, and keep one copy.
+Each workshop has its own plugin in its own marketplace. Add each one from **Customize → Plugins** the same way as personal-os, then run its setup in your personal OS folder. The same rules apply: install from Customize → Plugins, don't download the repository, and keep one copy.
 
 | Plugin | Add this marketplace | Setup | Adds |
 |---|---|---|---|
